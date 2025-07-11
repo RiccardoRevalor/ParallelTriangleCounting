@@ -35,6 +35,23 @@ void printMatrix(const std::vector<std::vector<int>>& matrix) {
     }
 }
 
+
+//Graphviz DOT format for printing the graph
+void printDot(const std::vector<std::vector<int>>& matrix) {
+    std::cout << "graph G {\n";
+
+    int numVertices = matrix.size();
+    for (int i = 0; i < numVertices; ++i) {
+        for (int j = i + 1; j < numVertices; ++j) {
+            if (matrix[i][j] == 1) {
+                std::cout << "  " << i << " -- " << j << ";\n";
+            }
+        }
+    }
+
+    std::cout << "}\n";
+}
+
 int main() {
     // Il grafo ha 12 nodi, numerati da 0 a 11
     const int NUM_VERTICES = 12;
@@ -68,8 +85,11 @@ int main() {
     addEdge(adjacencyMatrix, 10, 11);
 
     // Stampa la matrice risultante
-    std::cout << "Matrice di Adiacenza per il grafo:\n\n";
-    printMatrix(adjacencyMatrix);
+    //std::cout << "Matrice di Adiacenza per il grafo:\n\n";
+    //printMatrix(adjacencyMatrix);
 
+    //print with Graphviz DOT format
+    printDot(adjacencyMatrix);
+    
     return 0;
 }
