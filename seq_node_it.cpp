@@ -4,6 +4,7 @@
 #include <map>
 #include <algorithm>
 #include <set>
+#include "matrixMath.h"
 
 using namespace std;
 
@@ -131,6 +132,24 @@ void forwardAlgorithm(const vector<int> &orderedList, const vector<vector<int>> 
     }
 }
 
+float getTotTriangles(const vector<vector<int>> adjacencyMatrix) {
+    vector<vector<int>> A3 = cubeAdjacencyMatrix(adjacencyMatrix);
+
+    const float factor = (float)1/ (float)6;
+
+    // compute tractiant
+    int traciant = 0;
+    for (int i = 0; i < A3.size(); i++) {
+        for (int j = 0; j < A3[i].size(); j++) {
+            if (i == j) {
+                traciant += A3[i][j];
+            }
+        }
+    }
+
+    return factor*traciant;
+}
+
 int main() {
     // Il grafo ha 12 nodi, numerati da 0 a 11
     const int NUM_VERTICES = 12;
@@ -164,8 +183,8 @@ int main() {
     addEdge(adjacencyMatrix, 10, 11);
 
     // Stampa la matrice risultante
-    //std::cout << "Matrice di Adiacenza per il grafo:\n\n";
-    //printMatrix(adjacencyMatrix);
+    std::cout << "Matrice di Adiacenza per il grafo:\n\n";
+    printMatrix(adjacencyMatrix);
 
     //print with Graphviz DOT format
     printDot(adjacencyMatrix);
@@ -184,6 +203,8 @@ int main() {
     cout << "-----------------------------------------------------------------" << endl;
     // Run the forward algorithm
     forwardAlgorithm(orderedList, adjacencyMatrix);
+
+    cout << "Tot Max Theoretical Triangles: " << getTotTriangles(adjacencyMatrix) << endl;
 
     return 0;
 }
