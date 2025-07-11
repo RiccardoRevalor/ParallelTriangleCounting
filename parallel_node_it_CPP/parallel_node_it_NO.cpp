@@ -5,12 +5,14 @@
 #include <algorithm>
 #include <set>
 #include <chrono>
-#include <future>
-#include <mutex>
 #include "matrixMath.h"
+#include <future>
+#include <atomic>
+#include <mutex>
 
 using namespace std;
 mutex mtx0, mtx1;
+
 
 void addEdge(std::vector<std::vector<int>>& matrix, int u, int v) {
     
@@ -95,72 +97,50 @@ vector<int> getNeighbors(const vector<vector<int>> &adjacencyMatrix, int node) {
 }
 
 
-void worker(const int s, const int tStart, const int tEnd, const vector<int> &neighbors, vector<set<int>> &A, const map<int, int> &ranks, int &countTriangles) {
-    for (int t = tStart; t < tEnd; ++t) {
-        if (ranks.at(s) < ranks.at(neighbors[t])) {
-            //intersection of the two sets (A[s] and A[t])
-            set<int> intersection;
-            {
-                lock_guard<mutex> lock(mtx1);
-                set_intersection(
-                A[s].begin(), A[s].end(),
-                A[neighbors[t]].begin(), A[neighbors[t]].end(),
-                inserter(intersection, intersection.begin())
-            );
-            }
-            //print triangles vertexes
-            {
-                lock_guard<mutex> lock(mtx0);
-                if (intersection.empty()) {
-                    cout << "It's not possibile to form a triangle with vertexes: " << s << " and " << neighbors[t] << endl;
-                } else {
-                    cout << "Triangle formed by vertexes: " << s << ", " << neighbors[t] << " and ";
-                    for (const auto &v : intersection) {
-                        cout << v << " ";
-                        ++countTriangles;
+void forwardAlgorithm(const vector<int> &orderedList, const vector<vector<int>> &adjacencyMatrix, atomic<int> &countTriangles, const map<int, int> &ranks, vector<set<int>> &A, int startIdx, int endIdx) {
 
-                    }
-                    cout << endl;
-                }
-            }
-
-            //last step: update the set A[t]
-            {
-                lock_guard<mutex> lock(mtx1);
-                A[neighbors[t]].insert(s);
-            }
-        }
-    }
-}
-
-void forwardAlgorithm(const vector<int> &orderedList, const vector<vector<int>> &adjacencyMatrix, int &countTriangles, int numThreads = 16) {
-    //A =  vector of sets, for each node we have a set
-    vector<set<int>> A(adjacencyMatrix.size());
-
-    //maps of ranks of vertices based on their degree on the graph, so their position in the ordered list
-    map<int, int> ranks;
-    for (int i = 0; i < orderedList.size(); ++i) {
-        ranks[orderedList[i]] = i;
-    }
-
-
-    for (const auto &s: orderedList){
+    for (int i = startIdx; i < endIdx; ++i) {
+        int s = orderedList[i];
         //get adjacency list of the current node
         vector<int> neighbors = getNeighbors(adjacencyMatrix, s);
+        for (int t : neighbors) {
+            if (ranks.at(s) < ranks.at(t)) {
+                //intersection of the two sets (A[s] and A[t])
+                set<int> intersection;
+                {
+                    lock_guard<mutex> lock(mtx1); 
+                    set_intersection(
+                        A[s].begin(), A[s].end(),   
+                        A[t].begin(), A[t].end(),   
+                        inserter(intersection, intersection.begin())
+                    );
+                }
+                //print triangles vertexes
+                if (intersection.empty()){
+                    {
+                        lock_guard<mutex> lock(mtx0); // Lock the mutex to ensure thread safety
+                        cout << "It's not possibile to form a triangle with vertexes: " << s << " and " << t << endl;
 
-        const int chunkSize = (neighbors.size() + numThreads - 1) / numThreads; 
-        vector<future<void>> futures;
+                    }
+                } else {
+                    {
+                        lock_guard<mutex> lock(mtx0); // Lock the mutex to ensure thread safety
+                        cout << "Triangle formed by vertexes: " << s << ", " << t << " and ";
+                        for (const auto &v : intersection) {
+                            cout << v << " ";
+                             ++countTriangles;
+                        }
+                        cout << endl;
+                    }
+                    
+                }
 
-        for (int i = 0; i < numThreads; ++i) {
-            int tStart = i * chunkSize;
-            int tEnd = min(tStart + chunkSize, static_cast<int>(neighbors.size()));
-            if (tStart < tEnd) {
-                futures.emplace_back(async(launch::async, worker, s, tStart, tEnd, ref(neighbors), ref(A), ref(ranks), ref(countTriangles)));
+                //last step: update the set A[t]
+                {
+                    lock_guard<mutex> lock(mtx1); // Lock the mutex to ensure thread safety
+                    A[t].insert(s);
+                }
             }
-        }
-
-        for (auto &fut : futures) {
-            fut.get(); // Wait for all threads to finish before proceeding to next node
         }
     }
 }
@@ -185,11 +165,12 @@ float getTotTriangles(const vector<vector<int>> adjacencyMatrix) {
 
 int main() {
     // Il grafo ha 12 nodi, numerati da 0 a 11
-    const int NUM_VERTICES = 100; //12;
+    const int NUM_VERTICES =  100; //12;
+    const int NUM_TASKS = 16;
+    vector<future<void>> futures;   
 
     // Crea la matrice di adiacenza NxN, inizializzata con tutti 0
     vector<vector<int>> adjacencyMatrix(NUM_VERTICES, vector<int>(NUM_VERTICES, 0));
-
 
     addEdge(adjacencyMatrix, 0, 5);
 addEdge(adjacencyMatrix, 0, 6);
@@ -792,8 +773,7 @@ addEdge(adjacencyMatrix, 91, 95);
 addEdge(adjacencyMatrix, 91, 96);
 addEdge(adjacencyMatrix, 95, 96);
 
-
-    /* ESEMPIO QUER
+    /* GRAFO ESEMPIO QUER
     // Aggiungi gli archi basandoti sull'immagine del grafo a destra
     addEdge(adjacencyMatrix, 0, 1);
     addEdge(adjacencyMatrix, 0, 2);
@@ -837,12 +817,35 @@ addEdge(adjacencyMatrix, 95, 96);
     }
     cout << "\n";
 
+    //maps of ranks of vertices based on their degree on the graph, so their position in the ordered list
+    map<int, int> ranks;
+    for (int i = 0; i < orderedList.size(); ++i) {
+        ranks[orderedList[i]] = i;
+    }
+
+    //A =  vector of sets, for each node we have a set
+    vector<set<int>> A(adjacencyMatrix.size());
 
     cout << "-----------------------------------------------------------------" << endl;
-    int countTriangles = 0;
+    atomic<int> countTriangles = 0;
     auto startTime = chrono::high_resolution_clock::now();
     // Run the forward algorithm
-    forwardAlgorithm(orderedList, adjacencyMatrix, countTriangles);
+    int chunkSize = (orderedList.size() + NUM_TASKS - 1) / NUM_TASKS; // Calculate chunk size for each task
+    for (int i = 0; i < NUM_TASKS; ++i) {
+        int start = i * chunkSize;
+        int end = min(start + chunkSize, (int)orderedList.size());
+        if (start < end) {
+            futures.emplace_back(async(launch::async, forwardAlgorithm,
+                ref(orderedList), ref(adjacencyMatrix), ref(countTriangles), 
+                ref(ranks), ref(A), start, end
+            ));
+        }
+    }
+
+    for (auto &fut : futures) {
+        fut.get();
+    }
+
     auto endTime = chrono::high_resolution_clock::now();
     auto duration = chrono::duration_cast<chrono::microseconds>(endTime - startTime);
     cout << "Time taken for forward algorithm: " << duration.count() << " microseconds" << endl;
