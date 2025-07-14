@@ -10,7 +10,9 @@
 #include "../utils/utils.h"
 #include <thread>
 #include <atomic>
-#define NUM_THREADS 16
+
+#define NUM_THREADS 24
+#define DEBUG 0
 
 using namespace std;
 
@@ -239,11 +241,9 @@ float getTotTriangles(const vector<vector<int>> adjacencyMatrix) {
 }
 
 int main() {
-    // Il grafo ha 12 nodi, numerati da 0 a 11
-    const int NUM_VERTICES = 100; //12;
 
     // Crea la matrice di adiacenza NxN, inizializzata con tutti 0
-    vector<vector<int>> adjacencyMatrix = populateAdjacencyMatrix("../graph_file/graph1.g");
+    vector<vector<int>> adjacencyMatrix = populateAdjacencyMatrix("../graph_file/graph3.g");
 
     /* ESEMPIO QUER
     // Aggiungi gli archi basandoti sull'immagine del grafo a destra
@@ -273,21 +273,27 @@ int main() {
     */
 
     // Stampa la matrice risultante
-    std::cout << "Matrice di Adiacenza per il grafo:\n\n";
-    printMatrix(adjacencyMatrix);
-
-    //print with Graphviz DOT format
-    printDot(adjacencyMatrix);
+    
+    if (DEBUG) {
+        std::cout << "Matrice di Adiacenza per il grafo:\n\n";
+        printMatrix(adjacencyMatrix);
+    
+        //print with Graphviz DOT format
+        printDot(adjacencyMatrix);
+    }
 
 
     //print ordered list of nodes based on degree
     vector<int> orderedList;
     createOrderedList(adjacencyMatrix, orderedList);
-    std::cout << "Ordered list of nodes based on degree:\n";
-    for (const auto &node : orderedList) {
-        std::cout << node << " ";
+    if (DEBUG) {
+
+        std::cout << "Ordered list of nodes based on degree:\n";
+        for (const auto &node : orderedList) {
+            std::cout << node << " ";
+        }
+        std::cout << "\n";
     }
-    std::cout << "\n";
 
     //create edge set
     unordered_set<Edge> edgeSet = createEdgeSet(adjacencyMatrix);
