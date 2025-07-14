@@ -9,6 +9,8 @@
 #include "matrixMath.h"
 #include "../utils/utils.h"
 
+#define DEBUG 0
+
 using namespace std;
 
 struct Edge{
@@ -157,63 +159,19 @@ void EdgeIteratorAlgorithm(const vector<int> &orderedList, const vector<vector<i
         );
         //count triangles, i.e. the size of the intersection
         if (intersection.empty()){
-            cout << "It's not possibile to form a triangle with vertexes: " << v0 << " and " << v1 << endl;
+            if (DEBUG) cout << "It's not possibile to form a triangle with vertexes: " << v0 << " and " << v1 << endl;
         } else {
             for (const auto &v : intersection) {
                 if (ranks.at(v) > ranks.at(v1)) {
                     // Ora ogni triangolo viene contato esattamente una volta
                     ++countTriangles;
-                    cout << "Triangle found: (" << v0 << ", " << v1 << ", " << v << ")" << endl;
+                    if (DEBUG) cout << "Triangle found: (" << v0 << ", " << v1 << ", " << v << ")" << endl;
                 }
 
-                cout << endl;
+                if (DEBUG) cout << endl;
             }
         }
         
-    }
-}
-
-void forwardAlgorithm(const vector<int> &orderedList, const vector<vector<int>> &adjacencyMatrix, int &countTriangles) {
-    //A =  vector of sets, for each node we have a set
-    vector<set<int>> A(adjacencyMatrix.size());
-
-    //maps of ranks of vertices based on their degree on the graph, so their position in the ordered list
-    map<int, int> ranks;
-    for (int i = 0; i < orderedList.size(); ++i) {
-        ranks[orderedList[i]] = i;
-    }
-
-
-    for (const auto &s: orderedList){
-        //get adjacency list of the current node
-        vector<int> neighbors = getNeighbors(adjacencyMatrix, s);
-        for (int t : neighbors) {
-            if (ranks.at(s) < ranks.at(t)) {
-                //intersection of the two sets (A[s] and A[t])
-                set<int> intersection;
-                set_intersection(
-                    A[s].begin(), A[s].end(),   
-                    A[t].begin(), A[t].end(),   
-                    inserter(intersection, intersection.begin())
-                );
-                //print triangles vertexes
-                if (intersection.empty()){
-                    cout << "It's not possibile to form a triangle with vertexes: " << s << " and " << t << endl;
-                } else {
-                    cout << "Triangle formed by vertexes: " << s << ", " << t << " and ";
-                    for (const auto &v : intersection) {
-                        cout << v << " ";
-                        ++countTriangles;
-
-                    }
-                    cout << endl;
-                }
-
-                //last step: update the set A[t]
-                A[t].insert(s);
-
-            }
-        }
     }
 }
 
@@ -270,21 +228,26 @@ int main() {
     */
 
     // Stampa la matrice risultante
-    std::cout << "Matrice di Adiacenza per il grafo:\n\n";
-    printMatrix(adjacencyMatrix);
+    if (DEBUG) {
+        std::cout << "Matrice di Adiacenza per il grafo:\n\n";
+        printMatrix(adjacencyMatrix);
 
-    //print with Graphviz DOT format
-    printDot(adjacencyMatrix);
+        //print with Graphviz DOT format
+        printDot(adjacencyMatrix);
+    }
+
 
 
     //print ordered list of nodes based on degree
     vector<int> orderedList;
     createOrderedList(adjacencyMatrix, orderedList);
-    cout << "Ordered list of nodes based on degree:\n";
-    for (const auto &node : orderedList) {
-        cout << node << " ";
+    if (DEBUG) {
+        cout << "Ordered list of nodes based on degree:\n";
+        for (const auto &node : orderedList) {
+            cout << node << " ";
+        }
+        cout << "\n";
     }
-    cout << "\n";
 
     //create edge set
     unordered_set<Edge> edgeSet = createEdgeSet(adjacencyMatrix);
