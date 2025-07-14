@@ -8,6 +8,8 @@
 #include "matrixMath.h"
 #include "../utils/utils.h"
 
+#define DEBUG 0
+
 using namespace std;
 
 // Funzione per stampare la matrice di adiacenza
@@ -53,15 +55,13 @@ void printDot(const std::vector<std::vector<int>>& matrix) {
     cout << "}\n";
 }
 
-void createOrderedList(const vector<vector<int>> &adjacencyMatrix, vector<int> &orderedList){
+void createOrderedList(const map<int, vector<int>> &adjacencyVectors, vector<int> &orderedList){
     //create a map to store the degree of each node, then sort it
     map<int, int> nodeDegree;
-    for (int i = 0; i < adjacencyMatrix.size(); ++i) {
-        for (auto element : adjacencyMatrix[i]) {
-            if (element == 1) {
-                nodeDegree[i]++;
-            }
-        }
+    for (const auto &keyvaluepair: adjacencyVectors) {
+        int node = keyvaluepair.first;
+        int degree = keyvaluepair.second.size();
+        nodeDegree[node] = degree;
     }
     //sort map based on degree
     vector<pair<int, int>> nodeDegreeSorted(nodeDegree.begin(), nodeDegree.end());
@@ -76,20 +76,14 @@ void createOrderedList(const vector<vector<int>> &adjacencyMatrix, vector<int> &
 
 }
 
-vector<int> getNeighbors(const vector<vector<int>> &adjacencyMatrix, int node) {
-    vector<int> neighbors;
-    for (int i = 0; i < adjacencyMatrix[node].size(); ++i) {
-        if (adjacencyMatrix[node][i] == 1) {
-            neighbors.emplace_back(i);
-        }
-    }
-    return neighbors;
+vector<int> getNeighbors(const map<int, vector<int>> &adjacencyVectors, int node) {
+    return adjacencyVectors.at(node);
 }
 
 
-void forwardAlgorithm(const vector<int> &orderedList, const vector<vector<int>> &adjacencyMatrix, int &countTriangles) {
+void forwardAlgorithm(const vector<int> &orderedList, const map<int, vector<int>> &adjacencyVectors, int &countTriangles) {
     //A =  vector of sets, for each node we have a set
-    vector<set<int>> A(adjacencyMatrix.size());
+    vector<set<int>> A(adjacencyVectors.size());
 
     //maps of ranks of vertices based on their degree on the graph, so their position in the ordered list
     map<int, int> ranks;
@@ -100,7 +94,7 @@ void forwardAlgorithm(const vector<int> &orderedList, const vector<vector<int>> 
 
     for (const auto &s: orderedList){
         //get adjacency list of the current node
-        vector<int> neighbors = getNeighbors(adjacencyMatrix, s);
+        vector<int> neighbors = getNeighbors(adjacencyVectors, s);
         for (int t : neighbors) {
             if (ranks.at(s) < ranks.at(t)) {
                 //intersection of the two sets (A[s] and A[t])
@@ -112,15 +106,21 @@ void forwardAlgorithm(const vector<int> &orderedList, const vector<vector<int>> 
                 );
                 //print triangles vertexes
                 if (intersection.empty()){
-                    cout << "It's not possibile to form a triangle with vertexes: " << s << " and " << t << endl;
+                    if (DEBUG) cout << "It's not possibile to form a triangle with vertexes: " << s << " and " << t << endl;
                 } else {
-                    cout << "Triangle formed by vertexes: " << s << ", " << t << " and ";
-                    for (const auto &v : intersection) {
-                        cout << v << " ";
-                        ++countTriangles;
 
+                    if (DEBUG) {
+                        cout << "Triangle formed by vertexes: " << s << ", " << t << " and ";
+                        for (const auto &v : intersection) {
+                            cout << v << " ";
+                            
+
+                        }
+                        cout << endl;
                     }
-                    cout << endl;
+
+
+                    countTriangles += intersection.size();
                 }
 
                 //last step: update the set A[t]
@@ -131,30 +131,11 @@ void forwardAlgorithm(const vector<int> &orderedList, const vector<vector<int>> 
     }
 }
 
-float getTotTriangles(const vector<vector<int>> adjacencyMatrix) {
-    vector<vector<int>> A3 = cubeAdjacencyMatrix(adjacencyMatrix);
-
-    const float factor = (float)1/ (float)6;
-
-    // compute tractiant
-    int traciant = 0;
-    for (int i = 0; i < A3.size(); i++) {
-        for (int j = 0; j < A3[i].size(); j++) {
-            if (i == j) {
-                traciant += A3[i][j];
-            }
-        }
-    }
-
-    return factor*traciant;
-}
 
 int main() {
-    // Il grafo ha 12 nodi, numerati da 0 a 11
-    const int NUM_VERTICES = 100; //12;
 
     // Crea la matrice di adiacenza NxN, inizializzata con tutti 0
-    vector<vector<int>> adjacencyMatrix = populateAdjacencyMatrix("../graph_file/graph1.g");
+    map<int, vector<int>> adjacencyVectors = populateAdjacencyVectors("../graph_file/graph1.g");
 
     /* ESEMPIO QUER
     // Aggiungi gli archi basandoti sull'immagine del grafo a destra
@@ -183,34 +164,30 @@ int main() {
     addEdge(adjacencyMatrix, 10, 11);
     */
 
-    // Stampa la matrice risultante
-    std::cout << "Matrice di Adiacenza per il grafo:\n\n";
-    printMatrix(adjacencyMatrix);
-
-    //print with Graphviz DOT format
-    printDot(adjacencyMatrix);
 
 
     //print ordered list of nodes based on degree
     vector<int> orderedList;
-    createOrderedList(adjacencyMatrix, orderedList);
-    cout << "Ordered list of nodes based on degree:\n";
-    for (const auto &node : orderedList) {
-        cout << node << " ";
+    createOrderedList(adjacencyVectors, orderedList);
+    if (DEBUG) {
+        cout << "Ordered list of nodes based on degree:\n";
+        for (const auto &node : orderedList) {
+            cout << node << " ";
+        }
+        cout << "\n";
     }
-    cout << "\n";
 
 
     cout << "-----------------------------------------------------------------" << endl;
     int countTriangles = 0;
     auto startTime = chrono::high_resolution_clock::now();
     // Run the forward algorithm
-    forwardAlgorithm(orderedList, adjacencyMatrix, countTriangles);
+    forwardAlgorithm(orderedList, adjacencyVectors, countTriangles);
     auto endTime = chrono::high_resolution_clock::now();
     auto duration = chrono::duration_cast<chrono::microseconds>(endTime - startTime);
     cout << "Time taken for forward algorithm: " << duration.count() << " microseconds" << endl;
 
-    cout << "Tot Max Theoretical Triangles: " << getTotTriangles(adjacencyMatrix) << endl;
+    //cout << "Tot Max Theoretical Triangles: " << getTotTriangles(adjacencyVectors) << endl;
     cout << "Triangles found by forward algorithm: " << countTriangles << endl;
 
     return 0;

@@ -167,8 +167,6 @@ void EdgeIteratorAlgorithm(const vector<int> &orderedList, const map<int, vector
 }
 
 int main() {
-    // Il grafo ha 12 nodi, numerati da 0 a 11
-    const int NUM_VERTICES = 100; //12;
 
     // Crea la matrice di adiacenza NxN, inizializzata con tutti 0
     map<int, vector<int>> adjacencyVectors = populateAdjacencyVectors("../graph_file/graph1.g");
