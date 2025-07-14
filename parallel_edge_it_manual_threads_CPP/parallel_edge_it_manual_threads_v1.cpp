@@ -11,7 +11,7 @@
 #include <thread>
 #include <atomic>
 
-#define NUM_THREADS 24
+#define NUM_THREADS 4
 #define DEBUG 0
 
 using namespace std;
@@ -178,50 +178,6 @@ void EdgeIteratorAlgorithm(const vector<int> &orderedList, const vector<vector<i
     }
 }
 
-void forwardAlgorithm(const vector<int> &orderedList, const vector<vector<int>> &adjacencyMatrix, int &countTriangles) {
-    //A =  vector of sets, for each node we have a set
-    vector<set<int>> A(adjacencyMatrix.size());
-
-    //maps of ranks of vertices based on their degree on the graph, so their position in the ordered list
-    map<int, int> ranks;
-    for (int i = 0; i < orderedList.size(); ++i) {
-        ranks[orderedList[i]] = i;
-    }
-
-
-    for (const auto &s: orderedList){
-        //get adjacency list of the current node
-        vector<int> neighbors = getNeighbors(adjacencyMatrix, s);
-        for (int t : neighbors) {
-            if (ranks.at(s) < ranks.at(t)) {
-                //intersection of the two sets (A[s] and A[t])
-                set<int> intersection;
-                set_intersection(
-                    A[s].begin(), A[s].end(),   
-                    A[t].begin(), A[t].end(),   
-                    inserter(intersection, intersection.begin())
-                );
-                //print triangles vertexes
-                if (intersection.empty()){
-                    std::cout << "It's not possibile to form a triangle with vertexes: " << s << " and " << t << endl;
-                } else {
-                    std::cout << "Triangle formed by vertexes: " << s << ", " << t << " and ";
-                    for (const auto &v : intersection) {
-                        std::cout << v << " ";
-                        ++countTriangles;
-
-                    }
-                   std::cout << endl;
-                }
-
-                //last step: update the set A[t]
-                A[t].insert(s);
-
-            }
-        }
-    }
-}
-
 float getTotTriangles(const vector<vector<int>> adjacencyMatrix) {
     vector<vector<int>> A3 = cubeAdjacencyMatrix(adjacencyMatrix);
 
@@ -243,7 +199,7 @@ float getTotTriangles(const vector<vector<int>> adjacencyMatrix) {
 int main() {
 
     // Crea la matrice di adiacenza NxN, inizializzata con tutti 0
-    vector<vector<int>> adjacencyMatrix = populateAdjacencyMatrix("../graph_file/graph1.g");
+    vector<vector<int>> adjacencyMatrix = populateAdjacencyMatrix("../graph_file/graph3.g");
 
     /* ESEMPIO QUER
     // Aggiungi gli archi basandoti sull'immagine del grafo a destra
