@@ -156,7 +156,7 @@ int main() {
 
     // Crea la matrice di adiacenza NxN, inizializzata con tutti 0
 
-    vector<vector<int>> adjacencyMatrix = populateAdjacencyMatrix("../graph_file/graph3.g");
+    vector<vector<int>> adjacencyMatrix = populateAdjacencyMatrix("../graph_file/graph_10k.g");
 
     /* ESEMPIO QUER
     // Aggiungi gli archi basandoti sull'immagine del grafo a destra
