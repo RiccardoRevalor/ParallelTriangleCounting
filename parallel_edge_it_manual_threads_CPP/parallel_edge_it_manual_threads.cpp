@@ -243,7 +243,7 @@ float getTotTriangles(const vector<vector<int>> adjacencyMatrix) {
 int main() {
 
     // Crea la matrice di adiacenza NxN, inizializzata con tutti 0
-    vector<vector<int>> adjacencyMatrix = populateAdjacencyMatrix("../graph_file/graph3.g");
+    vector<vector<int>> adjacencyMatrix = populateAdjacencyMatrix("../graph_file/graph1.g");
 
     /* ESEMPIO QUER
     // Aggiungi gli archi basandoti sull'immagine del grafo a destra

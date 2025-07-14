@@ -10,7 +10,7 @@
 #include "../utils/utils.h"
 #include <omp.h> //OPEN MP 
 
-#define DEBUG 0
+#define DEBUG 1
 
 using namespace std;
 
@@ -244,7 +244,7 @@ int main() {
     const int NUM_VERTICES = 100; //12;
 
     // Crea la matrice di adiacenza NxN, inizializzata con tutti 0
-    vector<vector<int>> adjacencyMatrix = populateAdjacencyMatrix("../graph_file/graph3.g");
+    vector<vector<int>> adjacencyMatrix = populateAdjacencyMatrix("../graph_file/graph1.g");
 
     /* ESEMPIO QUER
     // Aggiungi gli archi basandoti sull'immagine del grafo a destra

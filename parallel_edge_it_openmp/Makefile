@@ -2,7 +2,7 @@
 CXX = g++
 
 # Number of threads to use for OpenMP
-OMP_NUM_THREADS = 24
+OMP_NUM_THREADS = 2
 
 # Flag per il compilatore:
 # -std=c++17: Usa lo standard C++17
