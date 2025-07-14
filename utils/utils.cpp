@@ -2,6 +2,7 @@
 #include <fstream>
 #include <string>
 #include <sstream>
+#include <map>
 
 using namespace std;
 
@@ -32,4 +33,31 @@ vector<vector<int>> populateAdjacencyMatrix(string fileName) {
 
     return adjacencyMatrix;
 
+}
+
+
+map<int, vector<int>> populateAdjacencyVectors(string fileName){
+    int NUM_VERTICES;
+    
+    fstream file;
+    file.open(fileName, ios::in);
+
+    string line;
+    getline(file, line);
+    NUM_VERTICES = stoi(line);
+
+    map<int, vector<int>> adjacencyVectors;
+
+    while(getline(file, line)) {
+        // line in the file: 1 2 
+        stringstream ss(line);
+        int v1, v2;
+        ss >> v1 >> v2;
+
+        adjacencyVectors[v1].push_back(v2);
+        adjacencyVectors[v2].push_back(v1); //assuming undirected graph
+
+    }
+    
+    return adjacencyVectors;
 }
