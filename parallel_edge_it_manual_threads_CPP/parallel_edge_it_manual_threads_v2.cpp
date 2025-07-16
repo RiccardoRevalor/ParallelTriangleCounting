@@ -192,41 +192,13 @@ int main() {
     // Crea la matrice di adiacenza NxN, inizializzata con tutti 0
     map<int, vector<int>> adjacencyVectors = populateAdjacencyVectors("../graph_file/graph2.g");
 
-    /* ESEMPIO QUER
-    // Aggiungi gli archi basandoti sull'immagine del grafo a destra
-    addEdge(adjacencyMatrix, 0, 1);
-    addEdge(adjacencyMatrix, 0, 2);
-    addEdge(adjacencyMatrix, 0, 3);
-    addEdge(adjacencyMatrix, 0, 6);
-    addEdge(adjacencyMatrix, 1, 2);
-    addEdge(adjacencyMatrix, 1, 4);
-    addEdge(adjacencyMatrix, 1, 5);
-    addEdge(adjacencyMatrix, 1, 7);
-    addEdge(adjacencyMatrix, 2, 5);
-    addEdge(adjacencyMatrix, 2, 8);
-    addEdge(adjacencyMatrix, 3, 4);
-    addEdge(adjacencyMatrix, 3, 5);
-    addEdge(adjacencyMatrix, 3, 9);
-    addEdge(adjacencyMatrix, 4, 5);
-    addEdge(adjacencyMatrix, 4, 8);
-    addEdge(adjacencyMatrix, 4, 10);
-    addEdge(adjacencyMatrix, 5, 11);
-    addEdge(adjacencyMatrix, 6, 7);
-    addEdge(adjacencyMatrix, 6, 11);
-    addEdge(adjacencyMatrix, 7, 8);
-    addEdge(adjacencyMatrix, 8, 9);
-    addEdge(adjacencyMatrix, 9, 10);
-    addEdge(adjacencyMatrix, 10, 11);
-    */
-
     // Stampa la matrice risultante
-    
     if (DEBUG) {
         std::cout << "Matrice di Adiacenza per il grafo:\n\n";
-        //printMatrix(adjacencyVectors);
+        // printMatrix(adjacencyVectors);
     
-        //print with Graphviz DOT format
-        //printDot(adjacencyVectors);
+        // print with Graphviz DOT format
+        // printDot(adjacencyVectors);
     }
 
 

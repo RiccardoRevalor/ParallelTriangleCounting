@@ -6,8 +6,8 @@
 #include <set>
 #include <unordered_set>
 #include <chrono>
-#include "matrixMath.h"
 #include "../utils/utils.h"
+#include "../utils/matrixMath.h"
 
 #define DEBUG 0
 
@@ -170,33 +170,6 @@ int main() {
 
     // Crea la matrice di adiacenza NxN, inizializzata con tutti 0
     map<int, vector<int>> adjacencyVectors = populateAdjacencyVectors("../graph_file/graph1.g");
-
-    /* ESEMPIO QUER
-    // Aggiungi gli archi basandoti sull'immagine del grafo a destra
-    addEdge(adjacencyVectors, 0, 1);
-    addEdge(adjacencyVectors, 0, 2);
-    addEdge(adjacencyVectors, 0, 3);
-    addEdge(adjacencyVectors, 0, 6);
-    addEdge(adjacencyVectors, 1, 2);
-    addEdge(adjacencyVectors, 1, 4);
-    addEdge(adjacencyVectors, 1, 5);
-    addEdge(adjacencyVectors, 1, 7);
-    addEdge(adjacencyVectors, 2, 5);
-    addEdge(adjacencyVectors, 2, 8);
-    addEdge(adjacencyVectors, 3, 4);
-    addEdge(adjacencyVectors, 3, 5);
-    addEdge(adjacencyVectors, 3, 9);
-    addEdge(adjacencyVectors, 4, 5);
-    addEdge(adjacencyVectors, 4, 8);
-    addEdge(adjacencyVectors, 4, 10);
-    addEdge(adjacencyVectors, 5, 11);
-    addEdge(adjacencyVectors, 6, 7);
-    addEdge(adjacencyVectors, 6, 11);
-    addEdge(adjacencyVectors, 7, 8);
-    addEdge(adjacencyVectors, 8, 9);
-    addEdge(adjacencyVectors, 9, 10);
-    addEdge(adjacencyVectors, 10, 11);
-    */
 
     // Stampa la matrice risultante
     if (DEBUG) std::cout << "Matrice di Adiacenza per il grafo:\n\n";

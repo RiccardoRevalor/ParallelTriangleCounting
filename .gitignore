@@ -1,1 +1,8 @@
-graph_file/
+graph_file/*
+!graph_file/graph_11.g
+!graph_file/graph_100.g
+!graph_file/graph_10k.g
+!graph_file/graph_1ml.g
+!graph_file/graph_2ml.g
+!graph_file/graph_5ml.g
+!graph_file/graph_10ml.g
