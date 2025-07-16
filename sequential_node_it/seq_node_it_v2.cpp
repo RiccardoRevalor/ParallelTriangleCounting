@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <set>
 #include <chrono>
+#include <fstream>
 #include "../utils/utils.h"
 #include "../utils/matrixMath.h"
 
@@ -98,6 +99,7 @@ void forwardAlgorithm(const vector<int> &orderedList, const map<int, vector<int>
         for (int t : neighbors) {
             if (ranks.at(s) < ranks.at(t)) {
                 //intersection of the two sets (A[s] and A[t])
+
                 set<int> intersection;
                 set_intersection(
                     A[s].begin(), A[s].end(),   
@@ -134,9 +136,24 @@ void forwardAlgorithm(const vector<int> &orderedList, const map<int, vector<int>
 
 int main() {
 
-    // Crea la matrice di adiacenza NxN, inizializzata con tutti 0
-    map<int, vector<int>> adjacencyVectors = populateAdjacencyVectors("../graph_file/graph_100.g");
+    std::string input;
+    while(true) {
+        cout << "insert file name: ";
+        std::getline(std::cin, input);
+        input = "../graph_file/" + input;
+        
+        // check whether file can be opened
+        std::ifstream file(input);
+        
+        if (file.is_open())
+            break;
+        cout << input << " doesn't exist!" << endl; 
+    }
 
+    // Crea la matrice di adiacenza NxN, inizializzata con tutti 0
+    map<int, vector<int>> adjacencyVectors = populateAdjacencyVectors(input);
+
+    
     //print ordered list of nodes based on degree
     vector<int> orderedList;
     createOrderedList(adjacencyVectors, orderedList);
@@ -147,8 +164,8 @@ int main() {
         }
         cout << "\n";
     }
-
-
+    
+    
     cout << "-----------------------------------------------------------------" << endl;
     int countTriangles = 0;
     auto startTime = chrono::high_resolution_clock::now();

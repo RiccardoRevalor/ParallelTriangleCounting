@@ -6,6 +6,7 @@
 #include <set>
 #include <unordered_set>
 #include <chrono>
+#include <fstream>
 #include "../utils/utils.h"
 #include "../utils/matrixMath.h"
 
@@ -168,8 +169,22 @@ void EdgeIteratorAlgorithm(const vector<int> &orderedList, const map<int, vector
 
 int main() {
 
+    std::string input;
+    while(true) {
+        cout << "insert file name: ";
+        std::getline(std::cin, input);
+        input = "../graph_file/" + input;
+        
+        // check whether file can be opened
+        std::ifstream file(input);
+        
+        if (file.is_open())
+            break;
+        cout << input << " doesn't exist!" << endl; 
+    }
+
     // Crea la matrice di adiacenza NxN, inizializzata con tutti 0
-    map<int, vector<int>> adjacencyVectors = populateAdjacencyVectors("../graph_file/graph_100.g");
+    map<int, vector<int>> adjacencyVectors = populateAdjacencyVectors(input);
 
     // Stampa la matrice risultante
     if (DEBUG) std::cout << "Matrice di Adiacenza per il grafo:\n\n";

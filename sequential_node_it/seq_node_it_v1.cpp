@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <set>
 #include <chrono>
+#include <fstream>
 #include "../utils/utils.h"
 #include "../utils/matrixMath.h"
 
@@ -139,6 +140,7 @@ void forwardAlgorithm(const vector<int> &orderedList, const vector<vector<int>> 
     }
 }
 
+
 float getTotTriangles(const vector<vector<int>> adjacencyMatrix) {
     vector<vector<int>> A3 = cubeAdjacencyMatrix(adjacencyMatrix);
 
@@ -159,8 +161,22 @@ float getTotTriangles(const vector<vector<int>> adjacencyMatrix) {
 
 int main() {
 
+    std::string input;
+    while(true) {
+        cout << "insert file name: ";
+        std::getline(std::cin, input);
+        input = "../graph_file/" + input;
+        
+        // check whether file can be opened
+        std::ifstream file(input);
+        
+        if (file.is_open())
+            break;
+        cout << input << " doesn't exist!" << endl; 
+    }
+
     // Crea la matrice di adiacenza NxN, inizializzata con tutti 0
-    vector<vector<int>> adjacencyMatrix = populateAdjacencyMatrix("../graph_file/graph_100.g");
+    vector<vector<int>> adjacencyMatrix = populateAdjacencyMatrix(input);
 
     // Stampa la matrice risultante
     if (DEBUG) {
