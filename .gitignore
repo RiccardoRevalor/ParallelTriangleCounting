@@ -7,6 +7,6 @@ graph_file/*
 !graph_file/graph_5ml.g
 !graph_file/graph_10ml.g
 
-**/main.exe
-**/main_v1.exe
-**/main_v2.exe
+*/main.exe
+*/main_v1.exe
+*/main_v2.exe
