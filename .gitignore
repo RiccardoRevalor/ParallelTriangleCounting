@@ -6,6 +6,3 @@ graph_file/*
 !graph_file/graph_2ml.g
 !graph_file/graph_5ml.g
 !graph_file/graph_10ml.g
-
-sequential_node_it/main_v1.exe
-sequential_node_it/main_v2.exe
