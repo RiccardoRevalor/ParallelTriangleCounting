@@ -169,7 +169,7 @@ void EdgeIteratorAlgorithm(const vector<int> &orderedList, const map<int, vector
 int main() {
 
     // Crea la matrice di adiacenza NxN, inizializzata con tutti 0
-    map<int, vector<int>> adjacencyVectors = populateAdjacencyVectors("../graph_file/graph1.g");
+    map<int, vector<int>> adjacencyVectors = populateAdjacencyVectors("../graph_file/graph_100.g");
 
     // Stampa la matrice risultante
     if (DEBUG) std::cout << "Matrice di Adiacenza per il grafo:\n\n";

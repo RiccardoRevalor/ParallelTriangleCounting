@@ -12,7 +12,7 @@ OMP_NUM_THREADS = 2
 CXXFLAGS = -std=c++20 -O3 -fopenmp -Wall
 
 # Nome del file sorgente (cambialo se il tuo file ha un nome diverso)
-SRCS = $(wildcard *.cpp) ../utils/utils.cpp
+SRCS = $(wildcard *.cpp) ../utils/utils.cpp ../utils/matrixMath.cpp
 
 # Nome del file eseguibile che verrà creato
 TARGET = main

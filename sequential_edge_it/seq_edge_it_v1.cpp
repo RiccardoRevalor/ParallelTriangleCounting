@@ -198,7 +198,7 @@ int main() {
     const int NUM_VERTICES = 100; //12;
 
     // Crea la matrice di adiacenza NxN, inizializzata con tutti 0
-    vector<vector<int>> adjacencyMatrix = populateAdjacencyMatrix("../graph_file/graph1.g");
+    vector<vector<int>> adjacencyMatrix = populateAdjacencyMatrix("../graph_file/graph_100.g");
 
     // Stampa la matrice risultante
     if (DEBUG) {

@@ -8,8 +8,8 @@
 #include <thread>
 #include <atomic>
 #include <unordered_set>
-#include "matrixMath.h"
 #include "../utils/utils.h"
+#include "../utils/matrixMath.h"
 
 #define NUM_THREADS 16
 #define DEBUG 0
@@ -156,7 +156,7 @@ int main() {
 
     // Crea la matrice di adiacenza NxN, inizializzata con tutti 0
 
-    vector<vector<int>> adjacencyMatrix = populateAdjacencyMatrix("../graph_file/graph_10k.g");
+    vector<vector<int>> adjacencyMatrix = populateAdjacencyMatrix("../graph_file/graph_100.g");
 
     // Stampa la matrice risultante
     if (DEBUG){

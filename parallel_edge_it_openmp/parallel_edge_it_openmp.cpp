@@ -6,11 +6,11 @@
 #include <set>
 #include <unordered_set>
 #include <chrono>
-#include "matrixMath.h"
 #include "../utils/utils.h"
+#include "../utils/matrixMath.h"
 #include <omp.h> //OPEN MP 
 
-#define DEBUG 1
+#define DEBUG 0
 
 using namespace std;
 
@@ -170,7 +170,7 @@ void EdgeIteratorAlgorithm(const vector<int> &orderedList, const vector<vector<i
                     //cout << "Triangle found: (" << v0 << ", " << v1 << ", " << v << ")" << endl;
                 }
 
-                cout << endl;
+                if (DEBUG) cout << endl;
             }
         }
         
@@ -202,15 +202,15 @@ void forwardAlgorithm(const vector<int> &orderedList, const vector<vector<int>> 
                 );
                 //print triangles vertexes
                 if (intersection.empty()){
-                    cout << "It's not possibile to form a triangle with vertexes: " << s << " and " << t << endl;
+                    if (DEBUG) cout << "It's not possibile to form a triangle with vertexes: " << s << " and " << t << endl;
                 } else {
-                    cout << "Triangle formed by vertexes: " << s << ", " << t << " and ";
+                    if (DEBUG) cout << "Triangle formed by vertexes: " << s << ", " << t << " and ";
                     for (const auto &v : intersection) {
-                        cout << v << " ";
+                        if (DEBUG) cout << v << " ";
                         ++countTriangles;
 
                     }
-                    cout << endl;
+                    if (DEBUG) cout << endl;
                 }
 
                 //last step: update the set A[t]
@@ -240,11 +240,8 @@ float getTotTriangles(const vector<vector<int>> adjacencyMatrix) {
 }
 
 int main() {
-    // Il grafo ha 12 nodi, numerati da 0 a 11
-    const int NUM_VERTICES = 100; //12;
-
     // Crea la matrice di adiacenza NxN, inizializzata con tutti 0
-    vector<vector<int>> adjacencyMatrix = populateAdjacencyMatrix("../graph_file/graph1.g");
+    vector<vector<int>> adjacencyMatrix = populateAdjacencyMatrix("../graph_file/graph_100.g");
 
     // Stampa la matrice risultante
     if (DEBUG) {

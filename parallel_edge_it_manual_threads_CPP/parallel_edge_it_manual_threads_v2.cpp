@@ -6,10 +6,10 @@
 #include <set>
 #include <unordered_set>
 #include <chrono>
-#include "matrixMath.h"
-#include "../utils/utils.h"
 #include <thread>
 #include <atomic>
+#include "../utils/utils.h"
+#include "../utils/matrixMath.h"
 
 #define NUM_THREADS 16
 #define DEBUG 0
@@ -190,7 +190,7 @@ float getTotTriangles(const vector<vector<int>> adjacencyMatrix) {
 int main() {
 
     // Crea la matrice di adiacenza NxN, inizializzata con tutti 0
-    map<int, vector<int>> adjacencyVectors = populateAdjacencyVectors("../graph_file/graph2.g");
+    map<int, vector<int>> adjacencyVectors = populateAdjacencyVectors("../graph_file/graph_100.g");
 
     // Stampa la matrice risultante
     if (DEBUG) {

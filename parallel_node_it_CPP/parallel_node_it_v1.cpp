@@ -7,8 +7,10 @@
 #include <chrono>
 #include <future>
 #include <mutex>
-#include "matrixMath.h"
 #include "../utils/utils.h"
+#include "../utils/matrixMath.h"
+
+#define DEBUG 0
 
 using namespace std;
 mutex mtx0, mtx1;
@@ -108,15 +110,15 @@ void worker(const int s, const int tStart, const int tEnd, const vector<int> &ne
             {
                 lock_guard<mutex> lock(mtx0);
                 if (intersection.empty()) {
-                    cout << "It's not possibile to form a triangle with vertexes: " << s << " and " << neighbors[t] << endl;
+                    if (DEBUG) cout << "It's not possibile to form a triangle with vertexes: " << s << " and " << neighbors[t] << endl;
                 } else {
-                    cout << "Triangle formed by vertexes: " << s << ", " << neighbors[t] << " and ";
+                    if (DEBUG) cout << "Triangle formed by vertexes: " << s << ", " << neighbors[t] << " and ";
                     for (const auto &v : intersection) {
-                        cout << v << " ";
+                        if (DEBUG) cout << v << " ";
                         ++countTriangles;
 
                     }
-                    cout << endl;
+                    if (DEBUG) cout << endl;
                 }
             }
 
@@ -185,24 +187,28 @@ int main() {
 
     // Crea la matrice di adiacenza NxN, inizializzata con tutti 0
 
-    vector<vector<int>> adjacencyMatrix = populateAdjacencyMatrix("../graph_file/graph1.g");
+    vector<vector<int>> adjacencyMatrix = populateAdjacencyMatrix("../graph_file/graph_100.g");
 
     // Stampa la matrice risultante
-    std::cout << "Matrice di Adiacenza per il grafo:\n\n";
-    printMatrix(adjacencyMatrix);
-
-    //print with Graphviz DOT format
-    printDot(adjacencyMatrix);
+    if (DEBUG) {
+        std::cout << "Matrice di Adiacenza per il grafo:\n\n";
+        printMatrix(adjacencyMatrix);
+        
+        //print with Graphviz DOT format
+        printDot(adjacencyMatrix);
+    }
 
 
     //print ordered list of nodes based on degree
     vector<int> orderedList;
     createOrderedList(adjacencyMatrix, orderedList);
-    cout << "Ordered list of nodes based on degree:\n";
-    for (const auto &node : orderedList) {
-        cout << node << " ";
+    if (DEBUG) {
+        cout << "Ordered list of nodes based on degree:\n";
+        for (const auto &node : orderedList) {
+            cout << node << " ";
+        }
+        cout << "\n";
     }
-    cout << "\n";
 
 
     cout << "-----------------------------------------------------------------" << endl;
