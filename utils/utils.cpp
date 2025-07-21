@@ -3,6 +3,7 @@
 #include <string>
 #include <sstream>
 #include <map>
+#include <algorithm>
 
 using namespace std;
 
@@ -67,7 +68,8 @@ map<int, vector<int>> populateAdjacencyVectors(string fileName){
 void convertToCRS(const std::map<int, std::vector<int>>& adjacencyVectors,
                   std::vector<int>& row_ptr,
                   std::vector<int>& col_idx,
-                  int& num_nodes) {
+                  int& num_nodes,
+                  bool sortNeighbors) {
     // Determine the number of nodes from the adjacency map
     if (!adjacencyVectors.empty()) {
         num_nodes = adjacencyVectors.rbegin()->first + 1; // assumes 0-based indexing
@@ -86,7 +88,11 @@ void convertToCRS(const std::map<int, std::vector<int>>& adjacencyVectors,
 
         auto it = adjacencyVectors.find(node);
         if (it != adjacencyVectors.end()) {
-            const auto& neighbors = it->second;
+
+            std::vector<int> neighbors = it->second; 
+            if (sortNeighbors) {
+                std::sort(neighbors.begin(), neighbors.end()); //sort neighbors if required
+            }
             col_idx.insert(col_idx.end(), neighbors.begin(), neighbors.end());
             edge_counter += neighbors.size();
         }

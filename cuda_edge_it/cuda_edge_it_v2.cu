@@ -75,22 +75,36 @@ __global__ void EdgeIteratorAlgorithmKernel(
         int v1_start = d_adjacencyList_rowPtr[v1];
         int v1_end = d_adjacencyList_rowPtr[v1 + 1];
 
-        //iterate over neighbors of both v0 and v1 and find intersections
-        for (int i = v0_start; i < v0_end; ++i) {
-            int neighbor_v0 = d_adjacencyList_colIdx[i];
-            for (int j = v1_start; j < v1_end; ++j) {
-                int neighbor_v1 = d_adjacencyList_colIdx[j];
-                
-                //if the neighbor of v0 is the same as the neighbor of v1, we have a triangle between v0, v1 and the common neighbor
-                if (neighbor_v0 == neighbor_v1) {
-                    int common_neighbor = neighbor_v0;
-                    // Apply the rank condition to count each triangle once
-                    if (d_ranks[common_neighbor] > rank_v1) {
-                        atomicAdd(d_countTriangles, 1); // Thread-safe increment
-                    }
+        //MERGE-LIKE ALGORITHM
+        //the list of neighbors are already sorted, so we can use a two-pointer technique
+        int p0 = v0_start; 
+        int p1 = v1_start; 
+
+        //iterate through both lists usins the two pointers
+        while (p0 < v0_end && p1 < v1_end){
+            //at each iteration, we compare a pair of neighbors, one of v0 and one of v1
+            int neighbor_v0 = d_adjacencyList_colIdx[p0];
+            int neighbor_v1 = d_adjacencyList_colIdx[p1];
+
+            //we test if we have found a common neighbor, i.e. a triangle formed by the edge (v0, v1) and the common neighbor
+            if (neighbor_v0 == neighbor_v1) {
+                //we have found a triangle, we can increment the counter
+                if (d_ranks[neighbor_v0] > rank_v1) {
+                    //apply the rank condition to count each triangle once
+                    atomicAdd(d_countTriangles, 1); // Thread-safe increment
                 }
+                p0++;
+                p1++;
+            } else if (neighbor_v0 < neighbor_v1) {
+                //if the neighbor of v0 is smaller, we move the pointer of v0
+                p0++;
+            } else {
+                //if the neighbor of v1 is smaller, we move the pointer of v1
+                p1++;
             }
         }
+
+
     
    
     }
@@ -177,7 +191,7 @@ int main(void){
     vector<int> h_adjacencyList_rowPtr, h_adjacencyList_colIdx;
     int numNodes;
 
-    convertToCRS(adjacencyVectors, h_adjacencyList_rowPtr, h_adjacencyList_colIdx, numNodes);
+    convertToCRS(adjacencyVectors, h_adjacencyList_rowPtr, h_adjacencyList_colIdx, numNodes, true); //sort neighbors to speed up the algorithm and use merge-like approach in the kernel function
 
 
     vector<int> h_orderedList;
