@@ -84,7 +84,8 @@ vector<int> getNeighbors(const map<int, vector<int>> &adjacencyVectors, int node
 
 void forwardAlgorithm(const vector<int> &orderedList, const map<int, vector<int>> &adjacencyVectors, int &countTriangles) {
     //A =  vector of sets, for each node we have a set
-    vector<set<int>> A(adjacencyVectors.size());
+    int maxIndex = adjacencyVectors.rbegin()->first;
+    vector<set<int>> A(maxIndex + 1);
 
     //maps of ranks of vertices based on their degree on the graph, so their position in the ordered list
     map<int, int> ranks;
