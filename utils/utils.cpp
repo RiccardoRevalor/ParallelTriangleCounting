@@ -61,3 +61,36 @@ map<int, vector<int>> populateAdjacencyVectors(string fileName){
     
     return adjacencyVectors;
 }
+
+
+
+void convertToCRS(const std::map<int, std::vector<int>>& adjacencyVectors,
+                  std::vector<int>& row_ptr,
+                  std::vector<int>& col_idx,
+                  int& num_nodes) {
+    // Determine the number of nodes from the adjacency map
+    if (!adjacencyVectors.empty()) {
+        num_nodes = adjacencyVectors.rbegin()->first + 1; // assumes 0-based indexing
+    } else {
+        num_nodes = 0;
+        row_ptr.clear();
+        col_idx.clear();
+        return;
+    }
+
+    row_ptr.resize(num_nodes + 1, 0);
+
+    int edge_counter = 0;
+    for (int node = 0; node < num_nodes; ++node) {
+        row_ptr[node] = edge_counter;
+
+        auto it = adjacencyVectors.find(node);
+        if (it != adjacencyVectors.end()) {
+            const auto& neighbors = it->second;
+            col_idx.insert(col_idx.end(), neighbors.begin(), neighbors.end());
+            edge_counter += neighbors.size();
+        }
+    }
+
+    row_ptr[num_nodes] = edge_counter;
+}
