@@ -15,7 +15,7 @@
 
 #define DEBUG 0
 
-#define MAX_SHARED_LIST_PER_EDGE_COMBINED 32
+#define MAX_SHARED_LIST_PER_EDGE_COMBINED 16
 
 #define CUDA_CHECK(err) do { cuda_check((err), __FILE__, __LINE__); } while(false)
 inline void cuda_check(cudaError_t error_code, const char *file, int line)
@@ -38,115 +38,105 @@ struct Edge{
 };
 
 
-//1 THREAD MANAGES JUST 1 EDGE
+//1 BLOCK FOR EACH EDGE
 __global__ void EdgeIteratorAlgorithmKernel(
     int numEdges,
-    const int* d_adjacencyList_rowPtr, // For CSR format
-    const int* d_adjacencyList_colIdx, // For CSR format
+    const int* d_adjacencyList_rowPtr,
+    const int* d_adjacencyList_colIdx,
     const Edge *d_edgeVector,
     const int* d_ranks,
     int* d_countTriangles
 ) {
+    // Un blocco intero processa un solo arco. L'indice dell'arco è l'indice del blocco.
+    int edge_idx = blockIdx.x;
 
-    int idx = blockIdx.x * blockDim.x + threadIdx.x;
+    // Dichiarazione della memoria condivisa per le due liste di adiacenza.
+    extern __shared__ int shared_lists[];
 
-    if (idx < numEdges){
-
-        Edge currentEdge = d_edgeVector[idx];
+    if (edge_idx < numEdges) {
+        Edge currentEdge = d_edgeVector[edge_idx];
         int v0 = currentEdge.v0;
         int v1 = currentEdge.v1;
 
         int rank_v0 = d_ranks[v0];
         int rank_v1 = d_ranks[v1];
 
-        //swap in case v0 has higher rank than v1
+        // Orienta l'arco dal nodo con rank più basso a quello con rank più alto
         if (rank_v0 > rank_v1) {
-            int temp = v0;
-            v0 = v1;
-            v1 = temp;
-            int temp_rank = rank_v0;
-            rank_v0 = rank_v1;
-            rank_v1 = temp_rank;
+            int temp_v = v0; v0 = v1; v1 = temp_v;
+            int temp_r = rank_v0; rank_v0 = rank_v1; rank_v1 = temp_r;
         }
 
-        //CSR standard
         int v0_start = d_adjacencyList_rowPtr[v0];
         int v0_end = d_adjacencyList_rowPtr[v0 + 1];
-
         int v1_start = d_adjacencyList_rowPtr[v1];
         int v1_end = d_adjacencyList_rowPtr[v1 + 1];
 
-        //length of two lists
         int len0 = v0_end - v0_start;
         int len1 = v1_end - v1_start;
-        //SHARED MEMORY IMPLEMENTATION
+
+        // Se le liste sono abbastanza piccole da entrare nella shared memory
         if (len0 > 0 && len1 > 0 && (len0 + len1) <= MAX_SHARED_LIST_PER_EDGE_COMBINED) {
-            printf("Using shared memory for edge %d\n", idx); // Rimuovi in produzione per non rallentare
             
-            extern __shared__ int shared_memory[]; // Shared memory dinamica per il blocco
-
-            // Calcola l'offset per la sezione di shared memory di questo thread
-            // Poiché un thread gestisce la propria edge, gli diamo uno spazio dedicato
-            int thread_shmem_offset = threadIdx.x * MAX_SHARED_LIST_PER_EDGE_COMBINED;
-
-            // Puntatori alle liste all'interno dello spazio shared memory di questo thread
-            int *shared_list0 = shared_memory + thread_shmem_offset;
-            int *shared_list1 = shared_memory + thread_shmem_offset + len0; //shared_list1 segue shared_list0 nello stesso spazio del thread
-
-            // Load data into shared memory
-            // Ogni thread carica la sua intera sezione
-            for (int i = 0; i < len0; ++i) { // Ciclo for per ogni elemento della lista
-                shared_list0[i] = d_adjacencyList_colIdx[v0_start + i];
+            // **Caricamento Cooperativo**
+            // I thread del blocco caricano la prima lista
+            for (int i = threadIdx.x; i < len0; i += blockDim.x) {
+                shared_lists[i] = d_adjacencyList_colIdx[v0_start + i];
             }
-            for (int i = 0; i < len1; ++i) { // Ciclo for per ogni elemento della lista
-                shared_list1[i] = d_adjacencyList_colIdx[v1_start + i];
+            // I thread del blocco caricano la seconda lista, posizionandola dopo la prima
+            for (int i = threadIdx.x; i < len1; i += blockDim.x) {
+                shared_lists[len0 + i] = d_adjacencyList_colIdx[v1_start + i];
             }
-            __syncthreads(); // Sincronizza i thread del blocco dopo il caricamento
+            
+            // Sincronizza tutti i thread del blocco per assicurarsi che il caricamento sia completo
+            __syncthreads();
 
-            // MERGE-LIKE ALGORITHM con puntatori RELATIVI per la shared memory
-            int p0_sh = 0; // Puntatore per shared_list0, inizia da 0
-            int p1_sh = 0; // Puntatore per shared_list1, inizia da 0
+            // **Intersezione in Shared Memory**
+            // Un solo thread (il primo) esegue l'algoritmo di merge
+            if (threadIdx.x == 0) {
+                int p0 = 0;
+                int p1 = 0;
+                while (p0 < len0 && p1 < len1) {
+                    int neighbor_v0 = shared_lists[p0];
+                    // La seconda lista inizia dopo len0 elementi
+                    int neighbor_v1 = shared_lists[len0 + p1]; 
 
-            while (p0_sh < len0 && p1_sh < len1){
-                int neighbor_v0 = shared_list0[p0_sh];
-                int neighbor_v1 = shared_list1[p1_sh];
-
-                if (neighbor_v0 == neighbor_v1) {
-                    if (d_ranks[neighbor_v0] > rank_v1) {
-                        atomicAdd(d_countTriangles, 1);
+                    if (neighbor_v0 == neighbor_v1) {
+                        if (d_ranks[neighbor_v0] > rank_v1) {
+                            atomicAdd(d_countTriangles, 1);
+                        }
+                        p0++;
+                        p1++;
+                    } else if (neighbor_v0 < neighbor_v1) {
+                        p0++;
+                    } else {
+                        p1++;
                     }
-                    p0_sh++;
-                    p1_sh++;
-                } else if (neighbor_v0 < neighbor_v1) {
-                    p0_sh++;
-                } else {
-                    p1_sh++;
                 }
             }
-        } else {
-            printf("Using global memory for edge %d\n", idx); // Rimuovi in produzione
-            // Fallback to global memory access if shared memory is not suitable
-            // MERGE-LIKE ALGORITHM con puntatori globali
-            int p0 = v0_start; 
-            int p1 = v1_start; 
+        } else { // Fallback su memoria globale per liste troppo grandi
+            // Un solo thread esegue il calcolo per evitare accessi multipli
+            if (threadIdx.x == 0) {
+                int p0 = v0_start;
+                int p1 = v1_start;
+                while (p0 < v0_end && p1 < v1_end) {
+                    int neighbor_v0 = d_adjacencyList_colIdx[p0];
+                    int neighbor_v1 = d_adjacencyList_colIdx[p1];
 
-            while (p0 < v0_end && p1 < v1_end){
-                int neighbor_v0 = d_adjacencyList_colIdx[p0];
-                int neighbor_v1 = d_adjacencyList_colIdx[p1];
-
-                if (neighbor_v0 == neighbor_v1) {
-                    if (d_ranks[neighbor_v0] > rank_v1) {
-                        atomicAdd(d_countTriangles, 1);
+                    if (neighbor_v0 == neighbor_v1) {
+                        if (d_ranks[neighbor_v0] > rank_v1) {
+                            atomicAdd(d_countTriangles, 1);
+                        }
+                        p0++;
+                        p1++;
+                    } else if (neighbor_v0 < neighbor_v1) {
+                        p0++;
+                    } else {
+                        p1++;
                     }
-                    p0++;
-                    p1++;
-                } else if (neighbor_v0 < neighbor_v1) {
-                    p0++;
-                } else {
-                    p1++;
                 }
             }
-        } 
+        }
     }
 }
 
@@ -282,13 +272,19 @@ int main(void){
     CUDA_CHECK(cudaMemcpy(d_countTriangles, &h_countTriangles, sizeof(int), cudaMemcpyHostToDevice));
 
 
-    int blockSize = 256; //threads per block1
-    int gridSize = (numEdges + blockSize - 1) / blockSize; //blocks in grid
+    int blockSize = 24; //threads per block1
+    int gridSize = numEdges;
 
 
     //start kernel function
     //number of bytes for shared memory
     size_t shmemBytes = blockSize * MAX_SHARED_LIST_PER_EDGE_COMBINED * sizeof(int);
+    int maxSharedMemoryPerBlock;
+    cudaDeviceGetAttribute(&maxSharedMemoryPerBlock, cudaDevAttrMaxSharedMemoryPerBlock, 0);
+    if (shmemBytes > maxSharedMemoryPerBlock) {
+        std::cout << "Errore: la shared memory richiesta (" << shmemBytes << " bytes) supera il massimo del dispositivo (" << maxSharedMemoryPerBlock << " bytes)." << std::endl;
+        shmemBytes = maxSharedMemoryPerBlock; // O gestisci l'errore
+    }
     auto startTime = chrono::high_resolution_clock::now();
     EdgeIteratorAlgorithmKernel<<<gridSize, blockSize, shmemBytes>>>(
         numEdges,
