@@ -2,8 +2,8 @@
 FALLBACK_NVCC = "C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v12.3/bin/nvcc.exe"
 NVCC := $(shell which nvcc 2>/dev/null || echo $(FALLBACK_NVCC))
 
-SRCS = cuda_edge_it_v1.cu ../utils/utils.cpp ../utils/matrixMath.cpp
-TARGET = main_v1
+SRCS = cuda_edge_it_v2.cu ../utils/utils.cpp ../utils/matrixMath.cpp
+TARGET = main_v2
 
 NVCCFLAGS = -O2 -std=c++20
 INCLUDES = -I../utils
