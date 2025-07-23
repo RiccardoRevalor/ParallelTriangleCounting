@@ -1,4 +1,4 @@
-//NODE ITERATIR CUDA VERSION, WITH FOR LOOPS
+//NODE ITERATIR CUDA VERSION, WITH MERGE LIKE INTERSECTION
 
 #include <cuda_runtime.h>
 #include <vector>
@@ -48,24 +48,28 @@ __global__ void ForwardAlgorithmKernel(
     // Iterate over neighbors of s
     for (int i = s_start; i < s_end; ++i) {
         int t = d_adjacencyList_colIdx[i];
-        int rank_t_ = d_ranks[t];
 
-        if (rank_s >= rank_t_) continue;
+        if (rank_s >= d_ranks[t]) continue;
 
         int t_start = d_adjacencyList_rowPtr[t];
         int t_end = d_adjacencyList_rowPtr[t + 1];
 
-        //for each neighbor t, iterate over its neighbors
-        for (int j = t_start; j < t_end; ++j) {
-            int v = d_adjacencyList_colIdx[j];
+        // Merge-like intersection between neighbors of s and neighbors of t
+        int p1 = s_start, p2 = t_start;
+        while (p1 < s_end && p2 < t_end) {
+            int v1 = d_adjacencyList_colIdx[p1];
+            int v2 = d_adjacencyList_colIdx[p2];
 
-            if (rank_t_ >= d_ranks[v]) continue;
-
-            for (int k = s_start; k < s_end; ++k) {
-                if (d_adjacencyList_colIdx[k] == v) {
+            if (v1 == v2) {
+                if (d_ranks[v2] > d_ranks[t]) {
                     atomicAdd(d_countTriangles, 1);
-                    break;
                 }
+                ++p1;
+                ++p2;
+            } else if (v1 < v2) {
+                ++p1;
+            } else {
+                ++p2;
             }
         }
     }
@@ -134,7 +138,71 @@ void createOrderedList(const map<int, vector<int>> &adjacencyVectors, vector<int
     }   
 }
 
+vector<int> getNeighbors(const vector<vector<int>> &adjacencyMatrix, int node) {
+    vector<int> neighbors;
+    for (int i = 0; i < adjacencyMatrix[node].size(); ++i) {
+        if (adjacencyMatrix[node][i] == 1) {
+            neighbors.emplace_back(i);
+        }
+    }
+    return neighbors;
+}
 
+
+
+void forwardAlgorithmParallel(const vector<int> &orderedList, const vector<vector<int>> &adjacencyMatrix, atomic<int> &countTriangles, int start, int end) {
+
+    //maps of ranks of vertices based on their degree on the graph, so their position in the ordered list
+    map<int, int> ranks;
+    for (int i = 0; i < orderedList.size(); ++i) {
+        ranks[orderedList[i]] = i;
+    }
+
+
+    for (int i = start; i < end; ++i) {
+        int s = orderedList[i];
+        //get adjacency list of the current node
+        vector<int> neighbors = getNeighbors(adjacencyMatrix, s);
+
+        unordered_set<int> u_neighbors_set(neighbors.begin(), neighbors.end());
+
+        for (int t : neighbors) {
+            if (ranks.at(s) >= ranks.at(t)) {
+                continue;
+            }
+
+            // Ora, per ogni vicino 't', controlla i suoi vicini 'w'
+            std::vector<int> t_neighbors = getNeighbors(adjacencyMatrix, t);
+            for (int v : t_neighbors) {
+                // Se v ha rank maggiore di t E v è anche vicino di s,
+                // abbiamo trovato un triangolo contato una sola volta.
+                if (ranks.at(t) < ranks.at(v) && u_neighbors_set.count(v)) {
+                    countTriangles++; // Incrementa il contatore locale del thread
+                }
+            }
+        }
+        
+    }
+}
+
+
+float getTotTriangles(const vector<vector<int>> adjacencyMatrix) {
+    vector<vector<int>> A3 = cubeAdjacencyMatrix(adjacencyMatrix);
+
+    const float factor = (float)1/ (float)6;
+
+    // compute tractiant
+    int traciant = 0;
+    for (int i = 0; i < A3.size(); i++) {
+        for (int j = 0; j < A3[i].size(); j++) {
+            if (i == j) {
+                traciant += A3[i][j];
+            }
+        }
+    }
+
+    return factor*traciant;
+}
 
 int main() {
 
@@ -198,7 +266,7 @@ int main() {
     int h_countTriangles = 0;
     CUDA_CHECK(cudaMemcpy(d_countTriangles, &h_countTriangles, sizeof(int), cudaMemcpyHostToDevice));
 
-    int blockSize = 8; //threads per block
+    int blockSize = 256; //threads per block
     int gridSize = (numNodes + blockSize - 1) / blockSize; //blocks in grid
 
     auto startTime = chrono::high_resolution_clock::now();
