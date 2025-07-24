@@ -2,7 +2,6 @@
 #include <iostream>
 #include <iomanip>
 #include <chrono>
-#include <thread>
 #include <fstream>
 #include <cuda_runtime.h>
 #include "../utils/utils.h"
