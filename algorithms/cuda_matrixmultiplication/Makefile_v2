@@ -1,0 +1,2 @@
+main_v2: cuda_matrixmultiplication_v2.cu ../../utils/utils.cpp
+	nvcc cuda_matrixmultiplication_v2.cu ../../utils/utils.cpp -o main_v2

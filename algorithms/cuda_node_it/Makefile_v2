@@ -1,0 +1,2 @@
+main_v2: cuda_node_it_v2.cu ../../utils/utils.cpp ../../utils/matrixMath.cpp
+	nvcc cuda_node_it_v2.cu ../../utils/utils.cpp ../../utils/matrixMath.cpp -o main_v2

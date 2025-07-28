@@ -15,7 +15,7 @@ CXXFLAGS = -std=c++20 -O3 -fopenmp -Wall
 SRCS = $(wildcard *.cpp) ../../utils/utils.cpp ../../utils/matrixMath.cpp
 
 # Nome del file eseguibile che verrà creato
-TARGET = main
+TARGET = main_v1
 
 # --- REGOLE ---
 
