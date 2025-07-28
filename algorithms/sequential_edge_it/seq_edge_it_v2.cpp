@@ -237,7 +237,7 @@ int main(int argc, char **argv) {
     // create cross validation output file
     std::ofstream crossValidationFile;
     // Corrected string concatenation for filename
-    crossValidationFile.open("../../cross_validation_output/seq_edge_it_v2/cross_validation_output_" + gpuModel + ".csv", std::ios::app);
+    crossValidationFile.open("../../cross_validation_output/seq_edge_it_v2/" + input + "_" + gpuModel + ".csv", std::ios::app);
     if (!crossValidationFile.is_open()) { // Use is_open() for robust check
         std::cerr << "Error opening cross validation output file!" << std::endl;
         return -1;
