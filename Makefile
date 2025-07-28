@@ -12,7 +12,13 @@
 		cuda_node_it.v1\
 		cuda_node_it.v2\
 		cuda_matrixmultiplication.v1\
-		cuda_matrixmultiplication.v2
+		cuda_matrixmultiplication.v2\
+		cuda_edge_it.v1\
+		cuda_edge_it.v1_1\
+		cuda_edge_it.v1_2\
+		cuda_edge_it.v2\
+		cuda_edge_it.v2_1\
+		cuda_edge_it.v2_2
 
 all:	sequential_node_it.v1\
 	 	sequential_node_it.v2\
@@ -27,7 +33,13 @@ all:	sequential_node_it.v1\
 		cuda_node_it.v1\
 		cuda_node_it.v2\
 		cuda_matrixmultiplication.v1\
-		cuda_matrixmultiplication.v2
+		cuda_matrixmultiplication.v2\
+		cuda_edge_it.v1\
+		cuda_edge_it.v1_1\
+		cuda_edge_it.v1_2\
+		cuda_edge_it.v2\
+		cuda_edge_it.v2_1\
+		cuda_edge_it.v2_2
 
 
 # Compiler paths
@@ -88,3 +100,21 @@ cuda_matrixmultiplication.v1:
 
 cuda_matrixmultiplication.v2:
 	$(MAKE) -C algorithms/cuda_matrixmultiplication -f Makefile_v2 OS=$(OS) NVCC=$(NVCC) VS_PATH=$(VS_PATH)
+
+cuda_edge_it.v1:
+	$(MAKE) -C algorithms/cuda_edge_it -f Makefile_v1 OS=$(OS) NVCC=$(NVCC) VS_PATH=$(VS_PATH)
+
+cuda_edge_it.v1_1:
+	$(MAKE) -C algorithms/cuda_edge_it -f Makefile_v1_1 OS=$(OS) NVCC=$(NVCC) VS_PATH=$(VS_PATH)
+
+cuda_edge_it.v1_2:
+	$(MAKE) -C algorithms/cuda_edge_it -f Makefile_v1_2 OS=$(OS) NVCC=$(NVCC) VS_PATH=$(VS_PATH)
+
+cuda_edge_it.v2:
+	$(MAKE) -C algorithms/cuda_edge_it -f Makefile_v2 OS=$(OS) NVCC=$(NVCC) VS_PATH=$(VS_PATH)
+
+cuda_edge_it.v2_1:
+	$(MAKE) -C algorithms/cuda_edge_it -f Makefile_v2_1 OS=$(OS) NVCC=$(NVCC) VS_PATH=$(VS_PATH)
+
+cuda_edge_it.v2_2:
+	$(MAKE) -C algorithms/cuda_edge_it -f Makefile_v2_2 OS=$(OS) NVCC=$(NVCC) VS_PATH=$(VS_PATH)
