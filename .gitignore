@@ -6,3 +6,7 @@ graph_file/*
 !graph_file/graph_2ml.g
 !graph_file/graph_5ml.g
 !graph_file/graph_10ml.g
+
+*.exe
+*.exp
+*.lib
