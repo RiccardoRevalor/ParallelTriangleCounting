@@ -10,7 +10,9 @@
 		parallel_edge_it_manual_threads_CPP.v1\
 		parallel_edge_it_manual_threads_CPP.v2\
 		cuda_node_it.v1\
-		cuda_node_it.v2
+		cuda_node_it.v2\
+		cuda_matrixmultiplication.v1\
+		cuda_matrixmultiplication.v2
 
 all:	sequential_node_it.v1\
 	 	sequential_node_it.v2\
@@ -23,7 +25,17 @@ all:	sequential_node_it.v1\
 		parallel_edge_it_manual_threads_CPP.v1\
 		parallel_edge_it_manual_threads_CPP.v2\
 		cuda_node_it.v1\
-		cuda_node_it.v2
+		cuda_node_it.v2\
+		cuda_matrixmultiplication.v1\
+		cuda_matrixmultiplication.v2
+
+
+# Compiler paths
+nvcc_linux := /usr/local/cuda-12.9/bin/nvcc
+nvcc_win := "C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v11.8/bin/nvcc.exe"
+
+# Default: Use the Linux one
+NVCC := $(nvcc_linux)
 
 
 sequential_node_it.v1:
@@ -57,9 +69,13 @@ parallel_edge_it_manual_threads_CPP.v2:
 	$(MAKE) -C algorithms/parallel_edge_it_manual_threads_CPP -f Makefile_v2
 
 cuda_node_it.v1:
-	$(MAKE) -C algorithms/cuda_node_it -f Makefile_v1
+	$(MAKE) -C algorithms/cuda_node_it -f Makefile_v1 NVCC="$(NVCC)"
 
 cuda_node_it.v2:
-	$(MAKE) -C algorithms/cuda_node_it -f Makefile_v2
+	$(MAKE) -C algorithms/cuda_node_it -f Makefile_v2 NVCC="$(NVCC)"
 
+cuda_matrixmultiplication.v1:
+	$(MAKE) -C algorithms/cuda_matrixmultiplication -f Makefile_v1 NVCC="$(NVCC)"
 
+cuda_matrixmultiplication.v2:
+	$(MAKE) -C algorithms/cuda_matrixmultiplication -f Makefile_v2 NVCC="$(NVCC)"

@@ -4,8 +4,7 @@
 #include <chrono>
 #include <fstream>
 #include <cuda_runtime.h>
-#include <string> // Added for std::string operations
-
+#include <string> // Added for std::string operationst
 #include "../../utils/utils.h"
 
 #define DEBUG 0
@@ -174,7 +173,7 @@ int main(int argc, char **argv){
     int TRACE_BLOCKSIZE = std::stoi(argv[3]);
     std::string gpuModel = argv[4]; // Changed to std::string directly
 
-    //extract file name from command line arguments
+    //extract file name from ctmmand line arguments
     std::string input = "../../graph_file/" + std::string(argv[1]);
 
     //if filename is "i" then ask for input
@@ -277,7 +276,7 @@ int main(int argc, char **argv){
 
     // create cross validation output file
     std::ofstream crossValidationFile;
-    // Corrected string concatenation for filename
+    // Corrected string concatenatitn for filename
     crossValidationFile.open("../../cross_validation_output/cuda_matrixmultiplication_v2/cross_validation_output_" + gpuModel + ".csv", std::ios::app);
     if (!crossValidationFile.is_open()) { // Use is_open() for robust check
         std::cerr << "Error opening cross validation output file!" << std::endl;
