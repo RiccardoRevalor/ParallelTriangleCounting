@@ -7,12 +7,11 @@
 #include <thread>
 #include <fstream>
 #include "../../utils/utils.h"
-#define NUMTHREADS 32
+#include <string>
 
 #define DEBUG 0
 using namespace std;
 
-barrier multiplyMatrixBarrier(NUMTHREADS);
 
 void multiplyMatrices(const vector<vector<int>>& A,
                                                const vector<vector<int>>& B,
@@ -28,7 +27,7 @@ void multiplyMatrices(const vector<vector<int>>& A,
 
 }
 
-void cubeAdjacencyMatrix(const std::vector<std::vector<int>>& adjacencyMatrix, vector<vector<int>> &A2_result, vector<vector<int>> &A3_result, const int startRow, const int endRow) {
+void cubeAdjacencyMatrix(const std::vector<std::vector<int>>& adjacencyMatrix, vector<vector<int>> &A2_result, vector<vector<int>> &A3_result, const int startRow, const int endRow, barrier<> &multiplyMatrixBarrier) {
     // Compute A^2
     multiplyMatrices(adjacencyMatrix, adjacencyMatrix, startRow, endRow, A2_result); //A2_result = A^2
 
@@ -40,7 +39,7 @@ void cubeAdjacencyMatrix(const std::vector<std::vector<int>>& adjacencyMatrix, v
 
 }
 
-float getTotTriangles(const vector<vector<int>> adjacencyMatrix) {
+float getTotTriangles(const vector<vector<int>> adjacencyMatrix, int NUMTHREADS, barrier<> &multiplyMatrixBarrier, long long &duration_final) {
     int n = adjacencyMatrix.size();
     vector<vector<int>> A2(n, vector<int>(n, 0));
     vector<vector<int>> A3(n, vector<int>(n, 0));
@@ -53,7 +52,7 @@ float getTotTriangles(const vector<vector<int>> adjacencyMatrix) {
     for (int i = 0; i < NUMTHREADS; ++i) {
         int startRow = i * chunkSize;
         int endRow = min(startRow + chunkSize, n);
-        threads.emplace_back(cubeAdjacencyMatrix, ref(adjacencyMatrix), ref(A2), ref(A3), startRow, endRow);
+        threads.emplace_back(cubeAdjacencyMatrix, ref(adjacencyMatrix), ref(A2), ref(A3), startRow, endRow, ref(multiplyMatrixBarrier));
     }
 
     cout << "Waiting for threads to finish..." << endl;
@@ -75,8 +74,8 @@ float getTotTriangles(const vector<vector<int>> adjacencyMatrix) {
         trace += A3[i][i];          
     }
     endTime = chrono::high_resolution_clock::now();
-    duration = chrono::duration_cast<chrono::microseconds>(endTime - startTime).count();
-    cout << "Time taken for trace computation: " << duration << " microseconds" << endl;
+    duration_final = chrono::duration_cast<chrono::microseconds>(endTime - startTime).count();
+    cout << "Time taken for trace computation: " << duration_final << " microseconds" << endl;
 
     return factor*trace;
 }
@@ -125,20 +124,36 @@ void printDot(const std::vector<std::vector<int>>& matrix) {
 }
 
 
-int main(void){
-    std::string input;
-    while(true) {
-        cout << "insert file name: ";
-        std::getline(std::cin, input);
-        input = "../../graph_file/" + input;
-        
-        // check whether file can be opened
-        std::ifstream file(input);
-        
-        if (file.is_open())
-            break;
-        cout << input << " doesn't exist!" << endl; 
+int main(int argc, char **argv) {
+    if (argc != 4){
+        cerr << "Usage: " << argv[0] << " <input_file> <NUM_THREADS> <GPU_MODEL>" << endl;
+        return 1;
     }
+
+    //if filename is "i" then ask for input
+    std::string input;
+    if (argv[1] == "i") {
+        while (true) {
+            std::cout << "insert file name: ";
+            std::getline(std::cin, input);
+            input = "../../graph_file/" + input;
+
+            std::ifstream file(input);
+            if (file.is_open())
+                break;
+            std::cout << input << " doesn't exist!" << std::endl;
+        }
+    } else {
+        //extract file name from command line arguments
+        input = "../../graph_file/" + std::string(argv[1]);
+    }
+
+    std::string gpuModel = argv[3];
+    int numThreads = std::stoi(argv[2]);
+
+    //define a barrier for thread synchronization
+    barrier<> multiplyMatrixBarrier(numThreads);
+
 
     // Crea la matrice di adiacenza NxN, inizializzata con tutti 0
     vector<vector<int>> adjacencyMatrix = populateAdjacencyMatrix(input);
@@ -152,11 +167,47 @@ int main(void){
         printDot(adjacencyMatrix);
     }
 
-
-    int countTriangles = getTotTriangles(adjacencyMatrix);
+    long long duration = 0;
+    int countTriangles = getTotTriangles(adjacencyMatrix, numThreads, multiplyMatrixBarrier, duration);
     cout << "Tot Max Theoretical Triangles: " << countTriangles << endl;
 
+     // create cross validation output file
+    std::ofstream crossValidationFile;
+    // Corrected string concatenation for filename
 
+    //REMOVE .g extension from input file name
+    size_t pos = input.find_last_of(".");
+    if (pos != std::string::npos) {
+        input = input.substr(0, pos);
+    }
+    //take just the file name without path
+    pos = input.find_last_of("/");
+    if (pos != std::string::npos) {
+        input = input.substr(pos + 1);
+    }
+    string outputFileName("../../cross_validation_output/parallel_matrixmultiplication/" + input + "_" + gpuModel + ".csv");
+    cout << "Output file name: " << outputFileName << endl;
+
+    crossValidationFile.open(outputFileName, std::ios::app);
+    if (!crossValidationFile.is_open()) { // Use is_open() for robust check
+        std::cerr << "Error opening cross validation output file!" << std::endl;
+        return -1;
+    }
+
+    // write parameters and final time to the file, CSV format
+    // put header if file is empty
+    // Check if the file is empty by seeking to end and checking position
+    crossValidationFile.seekp(0, std::ios::end); // Move to end
+    if (crossValidationFile.tellp() == 0) { // Check position
+        crossValidationFile << "NUM_THREADS,GPU_MODEL,TOTAL_DURATION_US,TRIANGLES\n";
+    }
+    // Changed `duration` to `duration_mm` and added `duration_trace`
+    crossValidationFile << numThreads << ","
+                      << gpuModel << ","
+                      << duration << ","
+                      << countTriangles << "\n";
+
+    crossValidationFile.close();
 
     return 0;
 

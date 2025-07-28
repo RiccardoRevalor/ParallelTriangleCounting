@@ -8,6 +8,7 @@
 #include <fstream>
 #include "../../utils/utils.h"
 #include "../../utils/matrixMath.h"
+#include <string>
 
 #define DEBUG 0
 
@@ -192,8 +193,19 @@ int main(int argc, char **argv) {
 
     // create cross validation output file
     std::ofstream crossValidationFile;
-    // Corrected string concatenation for filename
-    crossValidationFile.open("../../cross_validation_output/seq_node_it_v2/" + input + "_" + gpuModel + ".csv", std::ios::app);
+    //REMOVE .g extension from input file name
+    size_t pos = input.find_last_of(".");
+    if (pos != std::string::npos) {
+        input = input.substr(0, pos);
+    }
+    //take just the file name without path
+    pos = input.find_last_of("/");
+    if (pos != std::string::npos) {
+        input = input.substr(pos + 1);
+    }
+    string outputFileName("../../cross_validation_output/seq_node_it_v2/" + input + "_" + gpuModel + ".csv");
+    cout << "Output file name: " << outputFileName << endl;
+    crossValidationFile.open(outputFileName, std::ios::app);
     if (!crossValidationFile.is_open()) { // Use is_open() for robust check
         std::cerr << "Error opening cross validation output file!" << std::endl;
         return -1;
