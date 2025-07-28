@@ -173,11 +173,9 @@ int main(int argc, char **argv){
     int TRACE_BLOCKSIZE = std::stoi(argv[3]);
     std::string gpuModel = argv[4]; // Changed to std::string directly
 
-    //extract file name from ctmmand line arguments
-    std::string input = "../../graph_file/" + std::string(argv[1]);
-
     //if filename is "i" then ask for input
-    if (input == "i") {
+    std::string input;
+    if (argv[1] == "i") {
         while (true) {
             std::cout << "insert file name: ";
             std::getline(std::cin, input);
@@ -188,6 +186,9 @@ int main(int argc, char **argv){
                 break;
             std::cout << input << " doesn't exist!" << std::endl;
         }
+    } else {
+        //extract file name from command line arguments
+        input = "../../graph_file/" + std::string(argv[1]);
     }
 
 
