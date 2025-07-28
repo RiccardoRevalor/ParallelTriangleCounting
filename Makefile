@@ -32,11 +32,20 @@ all:	sequential_node_it.v1\
 
 # Compiler paths
 nvcc_linux := /usr/local/cuda-12.9/bin/nvcc
-nvcc_win := "C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v11.8/bin/nvcc.exe"
+nvcc_win := C:/Program\ Files/NVIDIA\ GPU\ Computing\ Toolkit/CUDA/v12.9/bin/nvcc.exe
 
-# Default: Use the Linux one
-NVCC := $(nvcc_linux)
+# cl.exe for windows
+VS_PATH := C:/Program\ Files/Microsoft\ Visual\ Studio/2022/Community/VC/Tools/MSVC/14.44.35207/bin/Hostx64/x64
 
+OS ?= linux
+
+ifeq ($(OS), linux)
+	NVCC := $(nvcc_linux)
+else ifeq ($(OS), windows)
+	NVCC := $(nvcc_win)
+else
+    $(error Unsupported TARGET_OS value: '$(TARGET_OS)'. Use 'linux' or 'windows')
+endif 
 
 sequential_node_it.v1:
 	$(MAKE) -C algorithms/sequential_node_it -f Makefile_v1
@@ -69,13 +78,13 @@ parallel_edge_it_manual_threads_CPP.v2:
 	$(MAKE) -C algorithms/parallel_edge_it_manual_threads_CPP -f Makefile_v2
 
 cuda_node_it.v1:
-	$(MAKE) -C algorithms/cuda_node_it -f Makefile_v1 NVCC="$(NVCC)"
+	$(MAKE) -C algorithms/cuda_node_it -f Makefile_v1 OS=$(OS) NVCC=$(NVCC) VS_PATH=$(VS_PATH)
 
 cuda_node_it.v2:
-	$(MAKE) -C algorithms/cuda_node_it -f Makefile_v2 NVCC="$(NVCC)"
+	$(MAKE) -C algorithms/cuda_node_it -f Makefile_v2 OS=$(OS) NVCC=$(NVCC) VS_PATH=$(VS_PATH)
 
 cuda_matrixmultiplication.v1:
-	$(MAKE) -C algorithms/cuda_matrixmultiplication -f Makefile_v1 NVCC="$(NVCC)"
+	$(MAKE) -C algorithms/cuda_matrixmultiplication -f Makefile_v1 OS=$(OS) NVCC=$(NVCC) VS_PATH=$(VS_PATH)
 
 cuda_matrixmultiplication.v2:
-	$(MAKE) -C algorithms/cuda_matrixmultiplication -f Makefile_v2 NVCC="$(NVCC)"
+	$(MAKE) -C algorithms/cuda_matrixmultiplication -f Makefile_v2 OS=$(OS) NVCC=$(NVCC) VS_PATH=$(VS_PATH)

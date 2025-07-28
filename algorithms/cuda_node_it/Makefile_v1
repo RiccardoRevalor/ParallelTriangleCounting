@@ -1,2 +1,9 @@
+ifeq ($(OS), linux)
 main_v1: cuda_node_it_v1.cu ../../utils/utils.cpp ../../utils/matrixMath.cpp
-	$(NVCC) cuda_node_it_v1.cu ../../utils/utils.cpp ../../utils/matrixMath.cpp -o main_v1
+	"$(NVCC)" cuda_node_it_v1.cu ../../utils/utils.cpp ../../utils/matrixMath.cpp -o main_v1
+
+else ifeq ($(OS), windows)
+main_v1: cuda_node_it_v1.cu ../../utils/utils.cpp ../../utils/matrixMath.cpp
+	"$(NVCC)" -ccbin="$(VS_PATH)" cuda_node_it_v1.cu ../../utils/utils.cpp ../../utils/matrixMath.cpp -o main_v1
+
+endif

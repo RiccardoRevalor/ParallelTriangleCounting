@@ -9,7 +9,7 @@ NVCCFLAGS = -O3 -std=c++20
 INCLUDES = -I../../utils
 
 $(TARGET): $(SRCS)
-	"$(NVCC)" $(NVCCFLAGS) $(INCLUDES) $(SRCS) -o $(TARGET)
+	"$(NVCC)" -ccbin=$(VS_PATH) $(NVCCFLAGS) $(INCLUDES) $(SRCS) -o $(TARGET)
 
 clean:
 	rm -f $(TARGET)
