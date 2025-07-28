@@ -24,3 +24,13 @@ make OS=windows
 **linux**
 cd path/to/ParallelCountTriangles
 make OS=linux 
+
+
+**remove .lib .exp**
+
+**windows**
+del /s /q *.lib *.exp
+
+**linux**
+find . -type f -name "*.lib" -delete
+find . -type f -name "*.exp" -delete
