@@ -1,0 +1,2 @@
+*.g linguist-vendored
+graph_file/** linguist-vendored
