@@ -10,3 +10,6 @@ graph_file/*
 *.exe
 *.exp
 *.lib
+
+main_v1
+main_v2
