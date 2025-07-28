@@ -4,6 +4,7 @@
 #include <sstream>
 #include <map>
 #include <algorithm>
+#include <iostream>
 
 using namespace std;
 
@@ -18,6 +19,10 @@ vector<vector<int>> populateAdjacencyMatrix(string fileName) {
     
     fstream file;
     file.open(fileName, ios::in);
+    if (!file.is_open()) {
+        cerr << "Error opening file: " << fileName << endl;
+        return {};
+    }
     
     string line;
     getline(file, line);

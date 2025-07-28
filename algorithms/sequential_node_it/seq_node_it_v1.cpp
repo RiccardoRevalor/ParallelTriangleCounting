@@ -166,9 +166,16 @@ int main(int argc, char **argv) {
         return 1;
     }
 
+    ///print all args
+    /*
+    for (int i = 0; i < argc; ++i) {
+        cout << "Arg " << i << ": " << argv[i] << endl;
+    }
+    return 0;*/
+
     //if filename is "i" then ask for input
     std::string input;
-    if (argv[1] == "i") {
+    if (std::string(argv[1]) == "i") {
         while (true) {
             std::cout << "insert file name: ";
             std::getline(std::cin, input);
