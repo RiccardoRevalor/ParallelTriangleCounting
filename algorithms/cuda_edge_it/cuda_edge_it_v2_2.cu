@@ -15,8 +15,6 @@
 
 #define DEBUG 0
 
-#define MAX_SHARED_LIST_PER_EDGE_COMBINED 32
-
 #define CUDA_CHECK(err) do { cuda_check((err), __FILE__, __LINE__); } while(false)
 inline void cuda_check(cudaError_t error_code, const char *file, int line)
 {
@@ -45,7 +43,8 @@ __global__ void EdgeIteratorAlgorithmKernel(
     const int* d_adjacencyList_colIdx, // For CSR format
     const Edge *d_edgeVector,
     const int* d_ranks,
-    int* d_countTriangles
+    int* d_countTriangles,
+    int MAX_SHARED_LIST_PER_EDGE_COMBINED = 32
 ) {
 
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
@@ -209,21 +208,34 @@ unordered_set<Edge> createEdgeSet(map<int, vector<int>> &adjacencyVectors) {
 
 
 
-int main(void){
+int main(int argc, char *argv[]) {
 
-    std::string input;
-    while(true) {
-        cout << "insert file name: ";
-        std::getline(std::cin, input);
-        input = "../../graph_file/" + input;
-        
-        // check whether file can be opened
-        std::ifstream file(input);
-        
-        if (file.is_open())
-            break;
-        cout << input << " doesn't exist!" << endl; 
+    if (argc != 5){
+        cerr << "Usage: " << argv[0] << " <input_file> <BLOCK_SIZE> <MAX_SHARED_LIST_PER_EDGE_COMBINED> <GPU_MODEL>" << endl;
+        return 1;
     }
+
+    //if filename is "i" then ask for input
+    std::string input;
+    if (argv[1] == "i") {
+        while (true) {
+            std::cout << "insert file name: ";
+            std::getline(std::cin, input);
+            input = "../../graph_file/" + input;
+
+            std::ifstream file(input);
+            if (file.is_open())
+                break;
+            std::cout << input << " doesn't exist!" << std::endl;
+        }
+    } else {
+        //extract file name from command line arguments
+        input = "../../graph_file/" + std::string(argv[1]);
+    }
+
+    std::string gpuModel = argv[4];
+    int blockSize = std::stoi(argv[2]);
+    int MAX_SHARED_LIST_PER_EDGE_COMBINED = std::stoi(argv[3]);
 
 
     // Crea la matrice di adiacenza NxN, inizializzata con tutti 0
@@ -282,7 +294,6 @@ int main(void){
     CUDA_CHECK(cudaMemcpy(d_countTriangles, &h_countTriangles, sizeof(int), cudaMemcpyHostToDevice));
 
 
-    int blockSize = 256; //threads per block1
     int gridSize = (numEdges + blockSize - 1) / blockSize; //blocks in grid
 
 
@@ -296,7 +307,8 @@ int main(void){
         d_adjacencyList_colIdx,
         d_edgeVector,
         d_ranks,
-        d_countTriangles
+        d_countTriangles,
+        MAX_SHARED_LIST_PER_EDGE_COMBINED
     );
 
     CUDA_CHECK(cudaDeviceSynchronize());
@@ -321,6 +333,47 @@ int main(void){
     CUDA_CHECK(cudaFree(d_countTriangles));
 
     CUDA_CHECK(cudaDeviceReset());
+
+
+
+    // create cross validation output file
+    std::ofstream crossValidationFile;
+    // Corrected string concatenation for filename
+
+    //REMOVE .g extension from input file name
+    size_t pos = input.find_last_of(".");
+    if (pos != std::string::npos) {
+        input = input.substr(0, pos);
+    }
+    //take just the file name without path
+    pos = input.find_last_of("/");
+    if (pos != std::string::npos) {
+        input = input.substr(pos + 1);
+    }
+    string outputFileName("../../cross_validation_output/cuda_edge_it_v2_2/" + input + "_" + gpuModel + ".csv");
+    cout << "Output file name: " << outputFileName << endl;
+
+    crossValidationFile.open(outputFileName, std::ios::app);
+    if (!crossValidationFile.is_open()) { // Use is_open() for robust check
+        std::cerr << "Error opening cross validation output file!" << std::endl;
+        return -1;
+    }
+
+    // write parameters and final time to the file, CSV format
+    // put header if file is empty
+    // Check if the file is empty by seeking to end and checking position
+    crossValidationFile.seekp(0, std::ios::end); // Move to end
+    if (crossValidationFile.tellp() == 0) { // Check position
+        crossValidationFile << "BLOCK_SIZE,MAX_SHARED_LIST_PER_EDGE_COMBINED,GPU_MODEL,TOTAL_DURATION_US,TRIANGLES\n";
+    }
+    // Changed `duration` to `duration_mm` and added `duration_trace`
+    crossValidationFile << blockSize << ","
+                      << MAX_SHARED_LIST_PER_EDGE_COMBINED << ","
+                      << gpuModel << ","
+                      << duration.count() << ","
+                      << countTriangles << "\n";
+
+    crossValidationFile.close();
 
 
     return 0;

@@ -12,7 +12,6 @@
 #include "../../utils/utils.h"
 #include "../../utils/matrixMath.h"
 
-#define NUM_THREADS 16
 #define DEBUG 0
 
 using namespace std;
@@ -188,21 +187,33 @@ float getTotTriangles(const vector<vector<int>> adjacencyMatrix) {
     return factor*traciant;
 }
 
-int main() {
+int main(int argc, char **argv) {
 
-    std::string input;
-    while(true) {
-        cout << "insert file name: ";
-        std::getline(std::cin, input);
-        input = "../../graph_file/" + input;
-        
-        // check whether file can be opened
-        std::ifstream file(input);
-        
-        if (file.is_open())
-            break;
-        cout << input << " doesn't exist!" << endl; 
+    if (argc != 4){
+        cerr << "Usage: " << argv[0] << " <input_file> <NUM_THREADS> <GPU_MODEL>" << endl;
+        return 1;
     }
+
+    //if filename is "i" then ask for input
+    std::string input;
+    if (argv[1] == "i") {
+        while (true) {
+            std::cout << "insert file name: ";
+            std::getline(std::cin, input);
+            input = "../../graph_file/" + input;
+
+            std::ifstream file(input);
+            if (file.is_open())
+                break;
+            std::cout << input << " doesn't exist!" << std::endl;
+        }
+    } else {
+        //extract file name from command line arguments
+        input = "../../graph_file/" + std::string(argv[1]);
+    }
+
+    std::string gpuModel = argv[3];
+    int numThreads = std::stoi(argv[2]);
 
     // Crea la matrice di adiacenza NxN, inizializzata con tutti 0
     map<int, vector<int>> adjacencyVectors = populateAdjacencyVectors(input);
@@ -236,12 +247,12 @@ int main() {
 
     //threads creation
     int totEdges = edgeVector.size();
-    int chunkSize = (totEdges + NUM_THREADS - 1) / NUM_THREADS; // Round up division
+    int chunkSize = (totEdges + numThreads - 1) / numThreads; // Round up division
     vector<thread> threads;
     atomic<int> countTriangles = 0;
     std::cout << "-----------------------------------------------------------------" << std::endl;
     auto startTime = chrono::high_resolution_clock::now();
-    for (int i = 0; i < NUM_THREADS; ++i) {
+    for (int i = 0; i < numThreads; ++i) {
         int start = i * chunkSize;
         int end = min(start + chunkSize, totEdges);
         threads.emplace_back(EdgeIteratorAlgorithm, ref(orderedList), ref(adjacencyVectors), ref(edgeVector), ref(countTriangles), start, end);
@@ -259,6 +270,45 @@ int main() {
     std::cout << "Triangles found by edge iterator algorithm: " << countTriangles << std::endl;
     std::cout << "Total number of edges: " << edgeSet.size() << std::endl
               << "Total number of nodes: " << adjacencyVectors.size() << std::endl;
+
+
+    // create cross validation output file
+    std::ofstream crossValidationFile;
+
+    //REMOVE .g extension from input file name
+    size_t pos = input.find_last_of(".");
+    if (pos != std::string::npos) {
+        input = input.substr(0, pos);
+    }
+    //take just the file name without path
+    pos = input.find_last_of("/");
+    if (pos != std::string::npos) {
+        input = input.substr(pos + 1);
+    }
+    string outputFileName("../../cross_validation_output/parallel_edge_it_manual_threads_v2/" + input + "_" + gpuModel + ".csv");
+    cout << "Output file name: " << outputFileName << endl;
+
+    crossValidationFile.open(outputFileName, std::ios::app);
+    if (!crossValidationFile.is_open()) { // Use is_open() for robust check
+        std::cerr << "Error opening cross validation output file!" << std::endl;
+        return -1;
+    }
+
+    // write parameters and final time to the file, CSV format
+    // put header if file is empty
+    // Check if the file is empty by seeking to end and checking position
+    crossValidationFile.seekp(0, std::ios::end); // Move to end
+    if (crossValidationFile.tellp() == 0) { // Check position
+        crossValidationFile << "NUM_THREADS,GPU_MODEL,TOTAL_DURATION_US,TRIANGLES\n";
+    }
+    // Changed `duration` to `duration_mm` and added `duration_trace`
+    crossValidationFile << numThreads << ","
+                      << gpuModel << ","
+                      << duration.count() << ","
+                      << countTriangles << "\n";
+
+    crossValidationFile.close();
+
 
     return 0;
 }

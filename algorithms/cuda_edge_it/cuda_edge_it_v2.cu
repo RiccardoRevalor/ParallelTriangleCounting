@@ -169,21 +169,33 @@ unordered_set<Edge> createEdgeSet(map<int, vector<int>> &adjacencyVectors) {
 
 
 
-int main(void){
+int main(int argc, char **argv) {
 
-    std::string input;
-    while(true) {
-        cout << "insert file name: ";
-        std::getline(std::cin, input);
-        input = "../../graph_file/" + input;
-        
-        // check whether file can be opened
-        std::ifstream file(input);
-        
-        if (file.is_open())
-            break;
-        cout << input << " doesn't exist!" << endl; 
+    if (argc != 4){
+        cerr << "Usage: " << argv[0] << " <input_file> <BLOCK_SIZE> <GPU_MODEL>" << endl;
+        return 1;
     }
+
+    //if filename is "i" then ask for input
+    std::string input;
+    if (argv[1] == "i") {
+        while (true) {
+            std::cout << "insert file name: ";
+            std::getline(std::cin, input);
+            input = "../../graph_file/" + input;
+
+            std::ifstream file(input);
+            if (file.is_open())
+                break;
+            std::cout << input << " doesn't exist!" << std::endl;
+        }
+    } else {
+        //extract file name from command line arguments
+        input = "../../graph_file/" + std::string(argv[1]);
+    }
+
+    std::string gpuModel = argv[3];
+    int blockSize = std::stoi(argv[2]);
 
 
     // Crea la matrice di adiacenza NxN, inizializzata con tutti 0
@@ -242,7 +254,6 @@ int main(void){
     CUDA_CHECK(cudaMemcpy(d_countTriangles, &h_countTriangles, sizeof(int), cudaMemcpyHostToDevice));
 
 
-    int blockSize = 256; //threads per block
     int gridSize = (numEdges + blockSize - 1) / blockSize; //blocks in grid
 
 
@@ -280,6 +291,44 @@ int main(void){
 
     CUDA_CHECK(cudaDeviceReset());
 
+
+    // create cross validation output file
+    std::ofstream crossValidationFile;
+    // Corrected string concatenation for filename
+
+    //REMOVE .g extension from input file name
+    size_t pos = input.find_last_of(".");
+    if (pos != std::string::npos) {
+        input = input.substr(0, pos);
+    }
+    //take just the file name without path
+    pos = input.find_last_of("/");
+    if (pos != std::string::npos) {
+        input = input.substr(pos + 1);
+    }
+    string outputFileName("../../cross_validation_output/cuda_edge_it_v2/" + input + "_" + gpuModel + ".csv");
+    cout << "Output file name: " << outputFileName << endl;
+
+    crossValidationFile.open(outputFileName, std::ios::app);
+    if (!crossValidationFile.is_open()) { // Use is_open() for robust check
+        std::cerr << "Error opening cross validation output file!" << std::endl;
+        return -1;
+    }
+
+    // write parameters and final time to the file, CSV format
+    // put header if file is empty
+    // Check if the file is empty by seeking to end and checking position
+    crossValidationFile.seekp(0, std::ios::end); // Move to end
+    if (crossValidationFile.tellp() == 0) { // Check position
+        crossValidationFile << "BLOCK_SIZE,GPU_MODEL,TOTAL_DURATION_US,TRIANGLES\n";
+    }
+    // Changed `duration` to `duration_mm` and added `duration_trace`
+    crossValidationFile << blockSize << ","
+                      << gpuModel << ","
+                      << duration.count() << ","
+                      << countTriangles << "\n";
+
+    crossValidationFile.close();
 
     return 0;
 }

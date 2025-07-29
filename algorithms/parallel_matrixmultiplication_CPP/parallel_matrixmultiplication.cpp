@@ -171,7 +171,7 @@ int main(int argc, char **argv) {
     int countTriangles = getTotTriangles(adjacencyMatrix, numThreads, multiplyMatrixBarrier, duration);
     cout << "Tot Max Theoretical Triangles: " << countTriangles << endl;
 
-     // create cross validation output file
+    // create cross validation output file
     std::ofstream crossValidationFile;
     // Corrected string concatenation for filename
 
