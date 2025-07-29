@@ -4,9 +4,45 @@
 #include <vector>
 #include <locale>       // For std::locale
 #include <codecvt>
+#include <array>
 
 
 using namespace std;
+
+const std::string PATH_SEQUENTIAL_NODE_IT = "../algorithms/sequential_node_it";
+const std::string PATH_SEQUENTIAL_EDGE_IT = "../algorithms/sequential_edge_it";
+const std::string PATH_PARALLEL_NODE_IT_CPP = "../algorithms/parallel_node_it_CPP";
+const std::string PATH_PARALLEL_MATRIXMULTIPLICATION_CPP = "../algorithms/parallel_matrixmultiplication_CPP";
+const std::string PATH_PARALLEL_EDGE_IT_OPENMP = "../algorithms/parallel_edge_it_openmp";
+const std::string PATH_PARALLEL_EDGE_IT_MANUAL_THREADS_CPP = "../algorithms/parallel_edge_it_manual_threads_CPP";
+const std::string PATH_CUDA_NODE_IT = "../algorithms/cuda_node_it";
+const std::string PATH_CUDA_MATRIXMULTIPLICATION = "../algorithms/cuda_matrixmultiplication";
+const std::string PATH_CUDA_EDGE_IT = "../algorithms/cuda_edge_it";
+
+// graphs
+const std::string graph_11 = "graph_11.g";
+const std::string graph_100 = "graph_100.g";
+const std::string graph_10k = "graph_10k.g";
+const std::string graph_100k = "graph_100k.g";
+const std::string graph_1ml = "graph_1ml.g";
+const std::string graph_2ml = "graph_2ml.g";
+const std::string graph_5ml = "graph_5ml.g";
+const std::string graph_10ml = "graph_10ml.g";
+const std::string graph_100ml = "graph_100ml.g";
+
+std::array<std::string, 8> graph_array = {graph_100, graph_10k, graph_100k, graph_1ml, graph_2ml, graph_5ml, graph_10ml, graph_100ml};
+std::array<std::string, 2> graph_array_cap_10k = {graph_100, graph_10k};
+
+// program versions
+const std::string main_v1 = "main_v1.exe";
+const std::string main_v1_1 = "main_v1_1.exe";
+const std::string main_v1_2 = "main_v1_2.exe";
+const std::string main_v2 = "main_v2.exe";
+const std::string main_v2_1 = "main_v2_1.exe";
+const std::string main_v2_2 = "main_v2_2.exe";
+
+//thread options array
+std::array<int, 5> numThreads = { 2, 4, 8, 16, 24 };
 
 
 //function to convert std::string (UTF-8) to std::wstring (UTF-16)
@@ -110,14 +146,57 @@ int executeWindowsProcess(const string &path, const string &args){
     return 0;
 }
 
-int main(void){
-    const string seq_node_it_v1_path = "../algorithms/sequential_node_it/main_v1.exe";
-    const string seq_node_it_v2_path = "../algorithms/sequential_node_it/main_v2.exe";
+int main(int argc, char** argv) {
+    
+    if (argc != 2) {
+        std::cerr << "Wrong number of arguments. Correct Usage: " + std::string(argv[0]) + " <GPU_MODEL>" << '\n';
+        return 1;
+    }
 
-    //execution
-    executeWindowsProcess(seq_node_it_v1_path, "graph_100.g RTX_4060_R");
+    std::string gpu = argv[1];
 
-    cout << "Sequential Node IT v1 executed successfully." << endl;
+    int numPhases = 0; //current phase
+
+
+
+
+    //RUN SEQUENTIALLY EVERY PROGRAM WITH EVERY PARAM
+
+    //Node V1
+    for (const std::string& graph : graph_array_cap_10k) {
+        if (executeWindowsProcess(PATH_SEQUENTIAL_NODE_IT + "/" + main_v1, graph + " " + gpu) != 0) {
+            return 1;
+        }
+    }
+
+    cout << "Phase " << ++numPhases << " completed: Sequential Node Iteration with graphs up to 10k nodes." << endl << endl;
+
+    //Node V2
+    for (const std::string& graph : graph_array) {
+        if (executeWindowsProcess(PATH_SEQUENTIAL_NODE_IT + "/" + main_v2, graph + " " + gpu) != 0) {
+            return 1;
+        }
+    }
+
+    cout << "Phase " << ++numPhases << " completed: Sequential Node Iteration with all graphs." << endl << endl;
+    
+    //Edge V1
+    for (const std::string& graph : graph_array_cap_10k) {
+        if (executeWindowsProcess(PATH_SEQUENTIAL_EDGE_IT + "/" + main_v1, graph + " " + gpu) != 0) {
+            return 1;
+        }
+    }
+
+    cout << "Phase " << ++numPhases << " completed: Sequential Edge Iteration with graphs up to 10k nodes." << endl << endl;
+
+    //Edge V2
+    for (const std::string& graph : graph_array) {
+        if (executeWindowsProcess(PATH_SEQUENTIAL_EDGE_IT + "/" + main_v2, graph + " " + gpu) != 0) {
+            return 1;
+        }
+    }
+
+    cout << "Phase " << ++numPhases << " completed: Sequential Edge Iteration with all graphs." << endl << endl;
 
     return 0;
 }
