@@ -119,18 +119,33 @@ void printDot(const std::vector<std::vector<int>>& matrix) {
 }
 
 
-int main(void){
+int main(int argc, char *argv[]) {
 
+    if (argc != 4){
+        std::cerr << "Usage: " << argv[0] << " <input_file> <BLOCK_SIZE> <GPU_MODEL>\n";
+        return 1;
+    }
+
+    //extract BLOCK_SIZE from command line arguments
+    int blockSize = std::stoi(argv[2]);
+    std::string gpuModel = argv[3]; 
+
+    //if filename is "i" then ask for input
     std::string input;
-    while (true) {
-        std::cout << "insert file name: ";
-        std::getline(std::cin, input);
-        input = "../../graph_file/" + input;
+    if (argv[1] == "i") {
+        while (true) {
+            std::cout << "insert file name: ";
+            std::getline(std::cin, input);
+            input = "../../graph_file/" + input;
 
-        std::ifstream file(input);
-        if (file.is_open())
-            break;
-        std::cout << input << " doesn't exist!" << std::endl;
+            std::ifstream file(input);
+            if (file.is_open())
+                break;
+            std::cout << input << " doesn't exist!" << std::endl;
+        }
+    } else {
+        //extract file name from command line arguments
+        input = "../../graph_file/" + std::string(argv[1]);
     }
 
 
@@ -155,7 +170,6 @@ int main(void){
     allocateDeviceMatrix(&d_A3, n);
 
     // Define grid and block dimensions
-    const int blockSize = 16;
     dim3 blockDim(blockSize, blockSize);
     dim3 gridDim((n + blockDim.x - 1) / blockDim.x, (n + blockDim.y - 1) / blockDim.y);
 
@@ -214,6 +228,30 @@ int main(void){
     CUDA_CHECK(cudaFree(d_trace));
 
     CUDA_CHECK(cudaDeviceReset());
+
+
+    // create cross validation output file
+    std::ofstream crossValidationFile;
+    // Corrected string concatenation for filename
+    crossValidationFile.open("../../cross_validation_output/cuda_matrixmultiplication_v1/cross_validation_output_" + gpuModel + ".csv", std::ios::app);
+    if (!crossValidationFile.is_open()) { // Use is_open() for robust check
+        std::cerr << "Error opening cross validation output file!" << std::endl;
+        return -1;
+    }
+
+    // write parameters and final time to the file, CSV format
+    // put header if file is empty
+    // Check if the file is empty by seeking to end and checking position
+    crossValidationFile.seekp(0, std::ios::end); // Move to end
+    if (crossValidationFile.tellp() == 0) { // Check position
+        crossValidationFile << "BLOCK_SIZE,GPU_MODEL,TOTAL_DURATION_US,TRIANGLES\n";
+    }
+    // Changed `duration` to `duration_mm` and added `duration_trace`
+    crossValidationFile << blockSize << "," << gpuModel << ","
+                        << duration << "," 
+                        << h_trace / 6 << "\n";
+
+    crossValidationFile.close();
 
     return 0;
 }

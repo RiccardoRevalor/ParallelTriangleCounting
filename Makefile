@@ -145,5 +145,3 @@ else
 	find algorithms CV_ORCHESTRATOR -name "*.ilk" -delete
 endif
 	@echo Clean process complete.
-=======
-	$(MAKE) -C CV_ORCHESTRATOR OS=$(OS)

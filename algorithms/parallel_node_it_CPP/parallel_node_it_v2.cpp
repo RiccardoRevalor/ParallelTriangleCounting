@@ -229,8 +229,6 @@ int main(int argc, char **argv) {
     auto endTime = chrono::high_resolution_clock::now();
     auto duration = chrono::duration_cast<chrono::microseconds>(endTime - startTime);
     cout << "Time taken for forward algorithm: " << duration.count() << " microseconds" << endl;
-
-    cout << "Tot Max Theoretical Triangles: " << getTotTriangles(adjacencyMatrix) << endl;
     cout << "Triangles found by forward algorithm: " << countTriangles << endl;
 
 

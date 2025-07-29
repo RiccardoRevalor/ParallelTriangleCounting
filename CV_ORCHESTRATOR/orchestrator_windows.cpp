@@ -256,6 +256,7 @@ int main(int argc, char** argv) {
     }
     cout << "Phase " << ++numPhases << " completed: Parallel Matrix Multiplication V1 Iteration with graphs up to 10k nodes." << endl << endl;
 
+    //CUDA 
     
 
     return 0;

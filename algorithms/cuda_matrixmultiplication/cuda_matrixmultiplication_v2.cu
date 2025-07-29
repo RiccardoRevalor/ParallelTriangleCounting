@@ -162,7 +162,7 @@ void printDot(const std::vector<std::vector<int>>& matrix) {
 
 
 int main(int argc, char **argv){
-    //argc == 4
+    
     if (argc != 5){
         std::cerr << "Usage: " << argv[0] << " <input_file> <TILE_SIZE> <TRACE_BLOCKSIZE> <GPU_MODEL>\n";
         return 1;
