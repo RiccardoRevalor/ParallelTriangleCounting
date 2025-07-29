@@ -13,7 +13,6 @@
 #include "../../utils/matrixMath.h"
 #include <string>
 
-#define NUM_THREADS 16
 #define DEBUG 0
 
 
@@ -209,11 +208,11 @@ int main(int argc, char **argv) {
     cout << "-----------------------------------------------------------------" << endl;
     atomic<int> countTriangles = 0;
     vector<thread> threads;
-    int chunkSize = (orderedList.size() + NUM_THREADS - 1) / NUM_THREADS; // Round up division
+    int chunkSize = (orderedList.size() + numThreads - 1) / numThreads; // Round up division
 
     auto startTime = chrono::high_resolution_clock::now();
 
-    for (int i = 0; i < NUM_THREADS; ++i) {
+    for (int i = 0; i < numThreads; ++i) {
         int start = i * chunkSize;
         int end = min(start + chunkSize, (int)orderedList.size());
 
