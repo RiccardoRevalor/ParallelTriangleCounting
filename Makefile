@@ -131,11 +131,8 @@ cuda_edge_it.v2_1:
 cuda_edge_it.v2_2:
 	$(MAKE) -C algorithms/cuda_edge_it -f Makefile_v2_2 OS=$(OS) NVCC=$(NVCC) VS_PATH=$(VS_PATH)
 
-ifeq ($(OS), windows)
-    MAKEFILE_NAME = Makefile_windows
-else
-    MAKEFILE_NAME = Makefile_linux
-endif
+
+
 
 ORCHESTRATOR:
-	$(MAKE) -C CV_ORCHESTRATOR -f $(MAKEFILE_NAME)
+	$(MAKE) -C CV_ORCHESTRATOR OS=$(OS)
