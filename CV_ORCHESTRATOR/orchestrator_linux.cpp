@@ -3,6 +3,7 @@
 #include <unistd.h> 
 #include <string>
 #include <array>
+#include <vector>
 
 // paths
 const std::string PATH_SEQUENTIAL_NODE_IT = "../algorithms/sequential_node_it";
@@ -37,7 +38,16 @@ const std::string main_v2 = "main_v2";
 const std::string main_v2_1 = "main_v2_1";
 const std::string main_v2_2 = "main_v2_2";
 
-int run_program(std::string program_name, std::string dirPath, std::string graph_file, std::string gpu) {
+// threads
+std::array<int, 5> thread_array = { 2, 4, 8, 16, 24 };      // thread
+std::array<int, 2> block_array = {128, 256};                // blocks
+std::array<int, 2> tile_array = {128, 256};                 // tiles
+std::array<int, 2> launch_array = {128, 256};               // launches
+std::array<int, 2> shared_list_array = {128, 256};               // max shared list per edge combined
+
+
+
+int run_program(std::string program_name, std::string dirPath, std::vector<std::string> &arguments) {
     int res;
     std::string outDir = "../../CV_ORCHESTRATOR";
     std::string command;
@@ -50,7 +60,13 @@ int run_program(std::string program_name, std::string dirPath, std::string graph
         std::cout << "Running " << program_name << '\n';
     }
 
-    command = "./" + program_name + " " + graph_file + " " + gpu;
+    // add arguments to command
+    command = "./" + program_name;
+    for (std::string arg : arguments) {
+        command += " " + arg;
+    }
+
+
     res = std::system(command.c_str());
     if (res != 0) {
         std::cerr << dirPath << " " << program_name << " " << " " << "failed!" << "\n";
@@ -66,8 +82,11 @@ int run_program(std::string program_name, std::string dirPath, std::string graph
     } 
 
     return 0;
-
 }
+
+
+
+
 
 int main(int argc, char** argv) {
    
@@ -81,29 +100,197 @@ int main(int argc, char** argv) {
     gpu = argv[1];
 
 
-    // RUN
+    /*
+
+    // RUN SEQUENTIAL
 
     for (std::string& graph : graph_array_cap_10k) {
-        if (run_program(main_v1, PATH_SEQUENTIAL_NODE_IT, graph, gpu) == 1) {
+        std::vector<std::string> vec = {graph, gpu};
+        if (run_program(main_v1, PATH_SEQUENTIAL_NODE_IT, vec) == 1) {
            return 1;
         }
     }
 
     for (std::string& graph : graph_array) {
-        if (run_program(main_v2, PATH_SEQUENTIAL_NODE_IT, graph, gpu) == 1) {
+        std::vector<std::string> vec = {graph, gpu};
+        if (run_program(main_v2, PATH_SEQUENTIAL_NODE_IT, vec) == 1) {
             return 1;
         }
     }
 
     for (std::string& graph : graph_array_cap_10k) {
-        if (run_program(main_v1, PATH_SEQUENTIAL_EDGE_IT, graph, gpu) == 1) {
+        std::vector<std::string> vec = {graph, gpu};
+        if (run_program(main_v1, PATH_SEQUENTIAL_EDGE_IT, vec) == 1) {
             return 1;
         }
     }
 
     for (std::string& graph : graph_array) {
-        if (run_program(main_v2, PATH_SEQUENTIAL_EDGE_IT, graph, gpu) == 1) {
+        std::vector<std::string> vec = {graph, gpu};
+        if (run_program(main_v2, PATH_SEQUENTIAL_EDGE_IT, vec) == 1) {
             return 1;
         }
     }
+
+    */
+
+
+
+    // RUN PARALLEL
+
+    for (std::string& graph : graph_array_cap_10k) {
+        for (int thread : thread_array) {
+            std::vector<std::string> vec = {graph, std::to_string(thread), gpu};
+            if (run_program(main_v1, PATH_PARALLEL_NODE_IT_CPP, vec) == 1) {
+                return 1;
+            }
+        }
+    }
+
+    for (std::string& graph : graph_array) {
+        for (int& thread : thread_array) {
+            std::vector<std::string> vec = {graph, std::to_string(thread), gpu};
+            if (run_program(main_v2, PATH_PARALLEL_NODE_IT_CPP, vec) == 1) {
+                return 1;
+            }
+        }
+    }
+
+    /*
+    for (std::string& graph : graph_array_cap_10k) {
+        for (int& thread : thread_array) {
+            std::vector<std::string> vec = {graph, std::to_string(thread), gpu};
+            if (run_program(main_v1, PATH_PARALLEL_MATRIXMULTIPLICATION_CPP, vec) == 1) {
+                return 1;
+            }
+        }
+    }
+
+    for (std::string& graph : graph_array_cap_10k) {
+        for (int& thread : thread_array) {
+            std::vector<std::string> vec = {graph, std::to_string(thread), gpu};
+            if (run_program(main_v1, PATH_PARALLEL_EDGE_IT_MANUAL_THREADS_CPP, vec) == 1) {
+                return 1;
+            }
+        }
+    }
+
+    for (std::string& graph : graph_array) {
+        for (int& thread : thread_array) {
+            std::vector<std::string> vec = {graph, std::to_string(thread), gpu};
+            if (run_program(main_v2, PATH_PARALLEL_EDGE_IT_MANUAL_THREADS_CPP, vec) == 1) {
+                return 1;
+            }
+        }
+    }
+
+    */
+
+    /*
+
+
+    // RUN CUDA
+
+    // cuda_node_it
+
+    for (std::string& graph : graph_array) {
+        for (int& block : block_array) {
+            std::vector<std::string> vec = {graph, std::to_string(block), gpu};
+            if (run_program(main_v1, PATH_CUDA_NODE_IT, vec) == 1) {
+                return 1;
+            }
+        }
+    }
+
+    for (std::string& graph : graph_array) {
+        for (int& block : block_array) {
+            std::vector<std::string> vec = {graph, std::to_string(block), gpu};
+            if (run_program(main_v2, PATH_CUDA_NODE_IT, vec) == 1) {
+                return 1;
+            }
+        }
+    }
+
+    for (std::string& graph : graph_array) {
+        for (int& block : block_array) {
+            std::vector<std::string> vec = {graph, std::to_string(block), gpu};
+            if (run_program(main_v1, PATH_CUDA_MATRIXMULTIPLICATION, vec) == 1) {
+                return 1;
+            }
+        }
+    }
+
+    for (std::string& graph : graph_array) {
+        for (int& block : block_array) {
+            std::vector<std::string> vec = {graph, std::to_string(block), gpu};
+            if (run_program(main_v2, PATH_CUDA_MATRIXMULTIPLICATION, vec) == 1) {
+                return 1;
+            }
+        }
+    }
+
+    // cuda_edge_it
+
+    for (std::string& graph : graph_array) {
+        for (int& block : block_array) {
+            std::vector<std::string> vec = {graph, std::to_string(block), gpu};
+            if (run_program(main_v1, PATH_CUDA_EDGE_IT, vec) == 1) {
+                return 1;
+            }
+        }
+    }
+
+    for (std::string& graph : graph_array) {
+        for (int& block : block_array) {
+            for (int& launch: launch_array) {
+                std::vector<std::string> vec = {graph, std::to_string(block), std::to_string(launch), gpu};
+                if (run_program(main_v1_1, PATH_CUDA_EDGE_IT, vec) == 1) {
+                    return 1;
+                }
+            }
+        }
+    }
+
+    for (std::string& graph : graph_array) {
+        for (int& block : block_array) {
+            std::vector<std::string> vec = {graph, std::to_string(block), gpu};
+            if (run_program(main_v1_2, PATH_CUDA_EDGE_IT, vec) == 1) {
+                return 1;
+            }
+        }
+    }
+
+    for (std::string& graph : graph_array) {
+        for (int& block : block_array) {
+            std::vector<std::string> vec = {graph, std::to_string(block), gpu};
+            if (run_program(main_v2, PATH_CUDA_EDGE_IT, vec) == 1) {
+                return 1;
+            }
+        }
+    }  
+
+    for (std::string& graph : graph_array) {
+        for (int& block : block_array) {
+            for (int& shared_list: shared_list_array) {
+                std::vector<std::string> vec = {graph, std::to_string(block), std::to_string(shared_list), gpu};
+                if (run_program(main_v2_1, PATH_CUDA_EDGE_IT, vec) == 1) {
+                    return 1;
+                }
+            }
+        }
+    }
+
+    for (std::string& graph : graph_array) {
+        for (int& block : block_array) {
+            for (int& shared_list: shared_list_array) {
+                std::vector<std::string> vec = {graph, std::to_string(block), std::to_string(shared_list), gpu};
+                if (run_program(main_v2_2, PATH_CUDA_EDGE_IT, vec) == 1) {
+                    return 1;
+                }
+            }
+        }
+    }
+
+    */
+
 }
