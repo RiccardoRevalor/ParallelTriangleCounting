@@ -19,7 +19,8 @@
 		cuda_edge_it.v2\
 		cuda_edge_it.v2_1\
 		cuda_edge_it.v2_2\
-		ORCHESTRATOR
+		ORCHESTRATOR\
+		clean
 
 all:	sequential_node_it.v1\
 	 	sequential_node_it.v2\
@@ -41,7 +42,8 @@ all:	sequential_node_it.v1\
 		cuda_edge_it.v2\
 		cuda_edge_it.v2_1\
 		cuda_edge_it.v2_2\
-		ORCHESTRATOR
+		ORCHESTRATOR\
+		clean
 
 
 # Compiler paths
@@ -139,3 +141,15 @@ endif
 
 ORCHESTRATOR:
 	$(MAKE) -C CV_ORCHESTRATOR -f $(MAKEFILE_NAME)
+
+clean:
+ifeq ($(OS), windows)
+	@cmd /C \"$(CURDIR)\delete_temps.bat\"t
+else
+	@echo Cleaning Linux/macOS-specific CUDA/linker artifacts...
+	find algorithms CV_ORCHESTRATOR -name "*.exp" -delete
+	find algorithms CV_ORCHESTRATOR -name "*.lib" -delete
+	find algorithms CV_ORCHESTRATOR -name "*.pdb" -delete
+	find algorithms CV_ORCHESTRATOR -name "*.ilk" -delete
+endif
+	@echo Clean process complete.

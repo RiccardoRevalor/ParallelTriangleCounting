@@ -42,7 +42,12 @@ const std::string main_v2_1 = "main_v2_1.exe";
 const std::string main_v2_2 = "main_v2_2.exe";
 
 //thread options array
-std::array<int, 5> numThreads = { 2, 4, 8, 16, 24 };
+std::array<int, 7> numThreads = { 2, 4, 6, 8, 10, 16, 24 };
+//CUDA block sizes array
+std::array<int, 7> blockSizes = { 8, 16, 32, 64, 128, 256, 512 };
+//CUDA MAX_SHARED_LIST_PER_EDGE_COMBINED array
+std::array<int, 7> maxSharedListPerEdgeCombined = { 4, 8, 16, 32, 64, 128, 256 };
+
 
 
 //function to convert std::string (UTF-8) to std::wstring (UTF-16)
@@ -169,7 +174,7 @@ int main(int argc, char** argv) {
         }
     }
 
-    cout << "Phase " << ++numPhases << " completed: Sequential Node Iteration with graphs up to 10k nodes." << endl << endl;
+    cout << "Phase " << ++numPhases << " completed: Sequential Node V1 Iteration with graphs up to 10k nodes." << endl << endl;
 
     //Node V2
     for (const std::string& graph : graph_array) {
@@ -178,7 +183,7 @@ int main(int argc, char** argv) {
         }
     }
 
-    cout << "Phase " << ++numPhases << " completed: Sequential Node Iteration with all graphs." << endl << endl;
+    cout << "Phase " << ++numPhases << " completed: Sequential Node V2 Iteration with all graphs." << endl << endl;
     
     //Edge V1
     for (const std::string& graph : graph_array_cap_10k) {
@@ -187,7 +192,7 @@ int main(int argc, char** argv) {
         }
     }
 
-    cout << "Phase " << ++numPhases << " completed: Sequential Edge Iteration with graphs up to 10k nodes." << endl << endl;
+    cout << "Phase " << ++numPhases << " completed: Sequential Edge V1 Iteration with graphs up to 10k nodes." << endl << endl;
 
     //Edge V2
     for (const std::string& graph : graph_array) {
@@ -196,7 +201,62 @@ int main(int argc, char** argv) {
         }
     }
 
-    cout << "Phase " << ++numPhases << " completed: Sequential Edge Iteration with all graphs." << endl << endl;
+    cout << "Phase " << ++numPhases << " completed: Sequential Edge V2 Iteration with all graphs." << endl << endl;
+
+
+    //Parallel Node CPP V1
+    for (const std::string& graph : graph_array_cap_10k) {
+        for (int threads : numThreads) {
+            if (executeWindowsProcess(PATH_PARALLEL_NODE_IT_CPP + "/" + main_v1, graph + " " + std::to_string(threads) + " " + gpu) != 0) {
+                return 1;
+            }
+        }
+    }
+    cout << "Phase " << ++numPhases << " completed: Parallel Node V1 Iteration with graphs up to 10k nodes." << endl << endl;
+
+    //Parallel Node CPP V2
+    for (const std::string& graph : graph_array) {
+        for (int threads : numThreads) {
+            if (executeWindowsProcess(PATH_PARALLEL_NODE_IT_CPP + "/" + main_v2, graph + " " + std::to_string(threads) + " " + gpu) != 0) {
+                return 1;
+            }
+        }
+    }
+    cout << "Phase " << ++numPhases << " completed: Parallel Node V2 Iteration with all graphs." << endl << endl;
+
+    //Parallel Edge CPP V1
+    for (const std::string& graph : graph_array_cap_10k) {
+        for (int threads : numThreads) {
+            if (executeWindowsProcess(PATH_PARALLEL_EDGE_IT_MANUAL_THREADS_CPP + "/" + main_v1, graph + " " + std::to_string(threads) + " " + gpu) != 0) {
+                return 1;
+            }
+        }
+    }
+    cout << "Phase " << ++numPhases << " completed: Parallel Edge V1 Iteration with graphs up to 10k nodes." << endl << endl;
+
+    //Parallel Edge CPP V2
+    for (const std::string& graph : graph_array) {
+        for (int threads : numThreads) {
+            if (executeWindowsProcess(PATH_PARALLEL_EDGE_IT_MANUAL_THREADS_CPP + "/" + main_v2, graph + " " + std::to_string(threads) + " " + gpu) != 0) {
+                return 1;
+            }
+        }
+    }
+    cout << "Phase " << ++numPhases << " completed: Parallel Edge V2 Iteration with all graphs." << endl << endl;
+
+    //parallel Edge OpenMP V1 -> TODO
+
+    //Parallel Matrix Multiplication CPP V1
+    for (const std::string& graph : graph_array_cap_10k) {
+        for (int threads : numThreads) {
+            if (executeWindowsProcess(PATH_PARALLEL_MATRIXMULTIPLICATION_CPP + "/" + main_v1, graph + " " + std::to_string(threads) + " " + gpu) != 0) {
+                return 1;
+            }
+        }
+    }
+    cout << "Phase " << ++numPhases << " completed: Parallel Matrix Multiplication V1 Iteration with graphs up to 10k nodes." << endl << endl;
+
+    
 
     return 0;
 }
