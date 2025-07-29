@@ -333,7 +333,7 @@ int main(int argc, char **argv) {
                       << desiredLaunches << ","
                       << gpuModel << ","
                       << duration.count() << ","
-                      << countTriangles << "\n";
+                      << h_countTriangles << "\n";
 
     crossValidationFile.close();
 

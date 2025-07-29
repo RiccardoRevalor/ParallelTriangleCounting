@@ -371,7 +371,7 @@ int main(int argc, char *argv[]) {
                       << MAX_SHARED_LIST_PER_EDGE_COMBINED << ","
                       << gpuModel << ","
                       << duration.count() << ","
-                      << countTriangles << "\n";
+                      << h_countTriangles << "\n";
 
     crossValidationFile.close();
 
