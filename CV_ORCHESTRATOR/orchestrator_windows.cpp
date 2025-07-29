@@ -45,8 +45,12 @@ const std::string main_v2_2 = "main_v2_2.exe";
 std::array<int, 7> numThreads = { 2, 4, 6, 8, 10, 16, 24 };
 //CUDA block sizes array
 std::array<int, 7> blockSizes = { 8, 16, 32, 64, 128, 256, 512 };
+//CUDA TRACE_BLOCKSIZE array
+std::array<int, 7> TileSize = { 8, 16, 32, 64, 128, 256, 512 };
 //CUDA MAX_SHARED_LIST_PER_EDGE_COMBINED array
 std::array<int, 7> maxSharedListPerEdgeCombined = { 4, 8, 16, 32, 64, 128, 256 };
+//CUDA Desired Launches for CUDA EDGE V1_1
+std::array<int, 7> desiredLaunches = { 200, 400, 800, 1000, 1200, 1500, 2000 };
 
 
 
@@ -256,8 +260,115 @@ int main(int argc, char** argv) {
     }
     cout << "Phase " << ++numPhases << " completed: Parallel Matrix Multiplication V1 Iteration with graphs up to 10k nodes." << endl << endl;
 
-    //CUDA 
+    //CUDA Node V1, JUST BLOCKSIZE
+    for (const std::string& graph : graph_array_cap_10k) {
+        for (int blockSize : blockSizes) {
+            if (executeWindowsProcess(PATH_CUDA_NODE_IT + "/" + main_v1, graph + " " + std::to_string(blockSize) + " " + gpu) != 0) {
+                return 1;
+            }
+        }
+    }
+    cout << "Phase " << ++numPhases << " completed: CUDA Node V1 Iteration with graphs up to 10k nodes." << endl << endl;
     
+    //CUDA NODE V2, JUST BLOCKSIZE
+    for (const std::string& graph : graph_array) {
+        for (int blockSize : blockSizes) {
+            if (executeWindowsProcess(PATH_CUDA_NODE_IT + "/" + main_v2, graph + " " + std::to_string(blockSize) + " " + gpu) != 0) {
+                return 1;
+            }
+        }
+    }
+    cout << "Phase " << ++numPhases << " completed: CUDA Node V2 Iteration with all graphs." << endl << endl;
+
+    //CUDA EDGE V1, JUST BLOCKSIZE
+    for (const std::string& graph : graph_array_cap_10k) {
+        for (int blockSize : blockSizes) {
+            if (executeWindowsProcess(PATH_CUDA_EDGE_IT + "/" + main_v1, graph + " " + std::to_string(blockSize) + " " + gpu) != 0) {
+                return 1;
+            }
+        }
+    }
+
+    cout << "Phase " << ++numPhases << " completed: CUDA Edge V1 Iteration with graphs up to 10k nodes." << endl << endl;
+
+    //CUDA EDGE V1_1, BLOCKSIZE AND DESIRED LAUNCHES
+    for (const std::string& graph : graph_array_cap_10k) {
+        for (int blockSize : blockSizes) {
+            for (int desiredLaunch : desiredLaunches) {
+                if (executeWindowsProcess(PATH_CUDA_EDGE_IT + "/" + main_v1_1 + "_1", graph + " " + std::to_string(blockSize) + " " + std::to_string(desiredLaunch) + " " + gpu) != 0) {
+                    return 1;
+                }
+            }
+        }
+    }
+    cout << "Phase " << ++numPhases << " completed: CUDA Edge V1_1 Iteration with graphs up to 10k nodes." << endl << endl;
+
+
+    //CUDA EDGE V1_2, JUST BLOCKSIZE
+    for (const std::string& graph : graph_array_cap_10k) {
+        for (int blockSize : blockSizes) {
+            if (executeWindowsProcess(PATH_CUDA_EDGE_IT + "/" + main_v1_2, graph + " " + std::to_string(blockSize) + " " + gpu) != 0) {
+                return 1;
+            }
+        }
+    }
+
+    //CUDA EDGE V2, JUST BLOCKSIZE
+    for (const std::string& graph : graph_array) {
+        for (int blockSize : blockSizes) {
+            if (executeWindowsProcess(PATH_CUDA_EDGE_IT + "/" + main_v2, graph + " " + std::to_string(blockSize) + " " + gpu) != 0) {
+                return 1;
+            }
+        }
+    }
+    cout << "Phase " << ++numPhases << " completed: CUDA Edge V2 Iteration with all graphs." << endl << endl;
+
+    //CUDA EDGE V2_1, BLOCKSIZE AND MAX_SHARED_LIST_PER_EDGE_COMBINED
+    for (const std::string& graph : graph_array) {
+        for (int blockSize : blockSizes) {
+            for (int maxSharedList : maxSharedListPerEdgeCombined) {
+                if (executeWindowsProcess(PATH_CUDA_EDGE_IT + "/" + main_v2_1, graph + " " + std::to_string(blockSize) + " " + std::to_string(maxSharedList) + " " + gpu) != 0) {
+                    return 1;
+                }
+            }
+        }
+    }
+    cout << "Phase " << ++numPhases << " completed: CUDA Edge V2_1 Iteration with all graphs." << endl << endl;
+
+    //CUDA EDGE V2_2, BLOCKSIZE AND MAX_SHARED_LIST_PER_EDGE_COMBINED
+    for (const std::string& graph : graph_array) {
+        for (int blockSize : blockSizes) {
+            for (int maxSharedList : maxSharedListPerEdgeCombined) {
+                if (executeWindowsProcess(PATH_CUDA_EDGE_IT + "/" + main_v2_2, graph + " " + std::to_string(blockSize) + " " + std::to_string(maxSharedList) + " " + gpu) != 0) {
+                    return 1;
+                }
+            }
+        }
+    }
+    cout << "Phase " << ++numPhases << " completed: CUDA Edge V2_2 Iteration with all graphs." << endl << endl;
+
+
+    //CUDA Matrix Multiplication V1, JUST BLOCKSIZE
+    for (const std::string& graph : graph_array_cap_10k) {
+        for (int blockSize : blockSizes) {
+            if (executeWindowsProcess(PATH_CUDA_MATRIXMULTIPLICATION + "/" + main_v1, graph + " " + std::to_string(blockSize) + " " + gpu) != 0) {
+                return 1;
+            }
+        }
+    }
+    cout << "Phase " << ++numPhases << " completed: CUDA Matrix Multiplication V1 Iteration with graphs up to 10k nodes." << endl << endl;
+
+    //CUDA Matrix Multiplication V2, BLOCKSIZE AND TILESIZE
+    for (const std::string& graph : graph_array_cap_10k) {
+        for (int blockSize : blockSizes) {
+            for (int tileSize : TileSize) {
+                if (executeWindowsProcess(PATH_CUDA_MATRIXMULTIPLICATION + "/" + main_v2, graph + " " + std::to_string(tileSize) + " " + std::to_string(blockSize) + " " + gpu) != 0) {
+                    return 1;
+                }
+            }
+        }
+    }
+    cout << "Phase " << ++numPhases << " completed: CUDA Matrix Multiplication V2 Iteration with graphs up to 10k nodes." << endl << endl;
 
     return 0;
 }

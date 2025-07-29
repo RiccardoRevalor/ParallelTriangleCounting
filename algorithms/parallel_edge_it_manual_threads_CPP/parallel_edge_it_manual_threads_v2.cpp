@@ -266,7 +266,6 @@ int main(int argc, char **argv) {
     auto duration = chrono::duration_cast<chrono::microseconds>(endTime - startTime);
     std::cout << "Time taken for edge iterator algorithm: " << duration.count() << " microseconds" << std::endl;
 
-    //std::cout << "Tot Max Theoretical Triangles: " << getTotTriangles(adjacencyMatrix) << std::endl;
     std::cout << "Triangles found by edge iterator algorithm: " << countTriangles << std::endl;
     std::cout << "Total number of edges: " << edgeSet.size() << std::endl
               << "Total number of nodes: " << adjacencyVectors.size() << std::endl;
