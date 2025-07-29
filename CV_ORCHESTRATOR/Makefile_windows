@@ -1,0 +1,2 @@
+main: orchestrator_windows.cpp
+	g++ -std=c++20 -cpp orchestrator_windows.cpp -o orchestrator_windows.exe
