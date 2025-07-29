@@ -1,6 +1,6 @@
 #include <iostream>
 #include <cstdlib>
-#include <unistd.h> 
+#include <unistd.h>
 #include <string>
 #include <array>
 #include <vector>
@@ -43,7 +43,7 @@ std::array<int, 5> thread_array = { 2, 4, 8, 16, 24 };      // thread
 std::array<int, 2> block_array = {128, 256};                // blocks
 std::array<int, 2> tile_array = {128, 256};                 // tiles
 std::array<int, 2> launch_array = {128, 256};               // launches
-std::array<int, 2> shared_list_array = {128, 256};               // max shared list per edge combined
+std::array<int, 2> shared_list_array = {128, 256};          // max shared list per edge combined
 
 
 
@@ -72,14 +72,14 @@ int run_program(std::string program_name, std::string dirPath, std::vector<std::
         std::cerr << dirPath << " " << program_name << " " << " " << "failed!" << "\n";
         return 1;
     }
-    
+
     if(chdir(outDir.c_str()) != 0) {
         std::cerr << "Failed to exit" << '\n';
         return 1;
     } else {
         std::cout << "Exit" << '\n';
         std::cout << '\n';
-    } 
+    }
 
     return 0;
 }
@@ -89,7 +89,7 @@ int run_program(std::string program_name, std::string dirPath, std::vector<std::
 
 
 int main(int argc, char** argv) {
-   
+
     std::string gpu;
 
     if (argc != 2) {
@@ -111,12 +111,16 @@ int main(int argc, char** argv) {
         }
     }
 
+    */
+
     for (std::string& graph : graph_array) {
         std::vector<std::string> vec = {graph, gpu};
         if (run_program(main_v2, PATH_SEQUENTIAL_NODE_IT, vec) == 1) {
             return 1;
         }
     }
+
+    /*
 
     for (std::string& graph : graph_array_cap_10k) {
         std::vector<std::string> vec = {graph, gpu};
@@ -138,6 +142,8 @@ int main(int argc, char** argv) {
 
     // RUN PARALLEL
 
+    /*
+
     for (std::string& graph : graph_array_cap_10k) {
         for (int thread : thread_array) {
             std::vector<std::string> vec = {graph, std::to_string(thread), gpu};
@@ -148,7 +154,8 @@ int main(int argc, char** argv) {
     }
 
     for (std::string& graph : graph_array) {
-        for (int& thread : thread_array) {
+        for (int thread : thread_array) {
+            std::cout << main_v2 << " | " << PATH_PARALLEL_NODE_IT_CPP << " | " << graph << " | " << thread << std::endl;
             std::vector<std::string> vec = {graph, std::to_string(thread), gpu};
             if (run_program(main_v2, PATH_PARALLEL_NODE_IT_CPP, vec) == 1) {
                 return 1;
@@ -156,7 +163,6 @@ int main(int argc, char** argv) {
         }
     }
 
-    /*
     for (std::string& graph : graph_array_cap_10k) {
         for (int& thread : thread_array) {
             std::vector<std::string> vec = {graph, std::to_string(thread), gpu};
@@ -187,7 +193,6 @@ int main(int argc, char** argv) {
     */
 
     /*
-
 
     // RUN CUDA
 
@@ -225,6 +230,29 @@ int main(int argc, char** argv) {
             std::vector<std::string> vec = {graph, std::to_string(block), gpu};
             if (run_program(main_v2, PATH_CUDA_MATRIXMULTIPLICATION, vec) == 1) {
                 return 1;
+            }
+        }
+    }
+
+
+    // cuda_matrixmultiplication
+
+    for (std::string& graph : graph_array) {
+        for (int& block : block_array) {
+            std::vector<std::string> vec = {graph, std::to_string(block), gpu};
+            if (run_program(main_v1, PATH_CUDA_MATRIXMULTIPLICATION, vec) == 1) {
+                return 1;
+            }
+        }
+    }
+
+    for (std::string& graph : graph_array) {
+        for (int& block : block_array) {
+            for (int& tile : tile_array) {
+                std::vector<std::string> vec = {graph, std::to_string(tile), std::to_string(block), gpu};
+                if (run_program(main_v2, PATH_CUDA_MATRIXMULTIPLICATION, vec) == 1) {
+                    return 1;
+                }
             }
         }
     }
@@ -267,7 +295,7 @@ int main(int argc, char** argv) {
                 return 1;
             }
         }
-    }  
+    }
 
     for (std::string& graph : graph_array) {
         for (int& block : block_array) {
@@ -291,6 +319,6 @@ int main(int argc, char** argv) {
         }
     }
 
-    */
+*/
 
 }
