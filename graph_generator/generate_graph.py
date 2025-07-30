@@ -1,8 +1,8 @@
 import random
 
-GRAPH_NAME = "graph_2ml"
+GRAPH_NAME = "graph_100ml"
 
-def generate_large_graph(file_path, num_nodes=2_000_000, num_triangles=40_000):
+def generate_large_graph(file_path, num_nodes=100_000_000, num_triangles=500_000):
     edge_set = set()
 
     with open(file_path, 'w') as f:
