@@ -1,5 +1,11 @@
+
 % Sample file for AES paper
 \documentclass{aes2e}
+
+\usepackage{amsmath}
+\usepackage{fourier}
+\DeclareMathAlphabet{\mathcal}{OMS}{cmsy}{m}{n}
+\SetMathAlphabet{\mathcal}{bold}{OMS}{cmsy}{b}{n}
 
 % Metadata Information
 \jyear{2010}
@@ -46,9 +52,39 @@ This category encompasses algorithms like the \textbf{Node Iterator} or the \tex
 \subsection{Linear Algebra/Matrix Methods}
 In this category, we mainly recall the \textbf{Matrix Multiplication} approach, which only works if the graph is represented by an adjacency matrix, which leverages matrix operations, specifically cubing (i.e. matrix multiplication) and trace computation, to get the exact number of triangles which can be created. Given the graph adjacency matrix $A$, this number is computed as $$\frac{1}{6} \text{ Trace}(A^3)$$ In graph terms, this trace represents the total count of all closed walks of length 3 in the graph, summed across all possible starting/ending vertices. 
 
-\section{CHIRP-LIKE IMPULSE RESPONSES AND GROUP DELAY}
-Filtering an audio signal with an allpass filter does not usually have a major effect on the signal's timbre. The allpass filter does not change the frequency content of the signal, but only introduces a phase shift or delay. Audibility of the phase distortion caused by an allpass filter in a sound reproduction system has been a topic of many studies, see, e.g., \cite{DEK1}, \cite{DEK2}. In this paper, we investigate audio effects processing using high-order allpass filters that consist of many cascaded low-order allpass filters. These filters have long chirp-like impulse responses.  These filters have long chirp-like impulse responses.  These filters have long chirp-like impulse responses. When audio and music signals are processed with such a filter, remarkable changes are obtained that are similar to the spectral delay effect  \cite{DEK3}, \cite{DEK4}.
-
+\section{Node Iterator Algorithm, Forward Algorithm}
+The simplest and most naive version of the Node Iterator Algorithm iterates over all nodes in the graph and, for each pair of neighbors of each node, checks whether they are connected by an edge. For each vertex, its \textbf{degree} $d(v)$ denotes its neighbors. If we have $V$ vertices, for each of them, we test unique pairs of neighbors that can be formed from $d(v)$ items. So, the overall complexity can be expressed as
+\begin{align*}
+\text{Complexity} &= \sum_{v \in V} \binom{d(v)}{2} \\
+&= \sum_{v \in V} \frac{d(v)!}{2!(d(v)-2)!} \\
+&= \sum_{v \in V} \frac{d(v) \cdot (d(v)-1) \cdot (d(v)-2)!}{2 \cdot 1 \cdot (d(v)-2)!} \\
+&= \sum_{v \in V} \frac{d(v) \cdot (d(v)-1)}{2}
+\end{align*}
+In this project, we resorted to the so called \textbf{Forward Algorithm}, a variant which aims at improving complexity by iterating over vertices in a specific order, and efficiently queries their neighbors to identify potential triangle closures. We first implemented the \textbf{sequential} version of the algorithm, using \textbf{C++}, in which we can identify three main data structures used:
+\begin{itemize}
+    \item \textbf{Graph Representation:} How the graph's vertices and edges are stored, enabling efficient retrieval of a node's neighbors. We used and analyzed two primary representations: \textbf{adjacency matrices} (implemented as \texttt{std::vector<std::vector<int>>}) and \textbf{adjacency lists} (implemented as \texttt{std::map<int, std::vector<int>>} to handle potentially sparse or non-contiguous node IDs).
+    \item \textbf{Auxiliary Sets (\textit{A[t]}):} Data structures used to store a specific subset of neighbors for each node (implemented as \texttt{std::vector<std::set<int>>}, where the outer vector is indexed by the node ID). These sets are then intersected (as defined in set theory) to identify the third vertex of a triangle.
+    \item \textbf{Ordering/Ranks:} Structures (a sorted list of vertices and a map for ranks) to maintain and query the chosen ordering of vertices. Our implementation orders vertices by their degree (from highest to lowest) to optimize performance.
+\end{itemize}
+In the file \texttt{seq\_node\_it\_v1.cpp} there's the implementation using the adjacency matrix. An entry \texttt{adjacencyMatrix[i][j]} is 1 if there is an edge between vertex \texttt{i} and vertex \texttt{j}, and 0 otherwise. So, with N nodes, the space complexity to store the matrix is $\mathcal{O}\left(N^2\right)$. Neighbor retrieval is linear, as it's mandatory to scan the full row of the node inside the matrix. The auxiliary set is defined as \texttt{std::vector<std::set<int>> A}. When processing an edge \texttt{(s, t)}, the algorithm needs to find common elements between \texttt{A[s]} and \texttt{A[t]}. As \texttt{std::set} stores elements in sorted order, \texttt{std::set\_intersection} can be efficiently applied, resulting in a complexity of $\mathcal{O}\left(K_0 + K_1\right)$, being $K_0$ and $K_1$ the sets sizes. For the orderings we use \texttt{std::map<int, int> ranks} and \texttt{std::vector<int> orderedList}.Checking rank condition takes $\mathcal{O}\left(\log N\right)$ for map lookups, and wwe iterate through the whole \texttt{orderedList} so it takes $\mathcal{O}\left( N\right)$. \\
+In the file \texttt{seq\_node\_it\_v2.cpp} we used the adjacency list, coded as a \texttt{std::map<int, std::vector<int>>} to better handle potentially sparse or non-contiguous node IDs. This version is \textbf{more efficient}: to find the neighbors of a vertex u, the algorithm performs a lookup in the map ($\mathcal{O}\left(\log N\right)$) and then copies the associated vector of neighbors ($\mathcal{O}\left( d(u)\right)$). This is significantly more efficient for sparse graphs than iterating an entire row of an adjacency matrix. \\
+So, to resume the comparison between the two algorithms:
+\begin{table}[htbp]
+    \centering
+    \caption{Summary of Sequential Forward Algorithm Implementation Complexities}
+    \label{tab:forward_complexity_summary}
+    \begin{tabular}{|l|l|}
+        \hline
+        \textbf{Graph Representation} & \textbf{Overall Time Complexity} \\
+        \hline
+        Adjacency Matrix & $\mathcal{O}(N^3 \log N)$ \\
+        Adjacency List & $\mathcal{O}(M \cdot d_{max})$ \\
+        \hline
+    \end{tabular}
+    \vspace{0.5em} % Adds a little space below the table
+    \small
+    Where $N$ is the number of vertices, $M$ is the number of edges, and $d_{max}$ is the maximum degree in the graph.
+\end{table}
 %Head 2
 \subsection{Chirp-Like Impulse Responses and Group Delay}
 Filtering an audio signal with an allpass filter does not usually have a major effect on the signal's timbre. The allpass filter does not change the frequency content of the signal, but only introduces a phase shift or delay. Audibility of the phase distortion caused by an allpass filter in a sound reproduction system has been a topic of many studies, see, e.g., \cite{DEK1}, \cite{DEK2}. In this paper, we investigate audio effects processing using high-order allpass filters that consist of many cascaded low-order allpass filters. These filters have long chirp-like impulse responses. When audio and music signals are processed with such a filter, remarkable changes are obtained that are similar to the spectral delay effect  \cite{DEK3}, \cite{DEK4}.
