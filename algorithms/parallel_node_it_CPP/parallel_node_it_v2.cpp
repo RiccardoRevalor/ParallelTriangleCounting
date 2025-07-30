@@ -62,15 +62,13 @@ void printDot(const std::vector<std::vector<int>>& matrix) {
     cout << "}\n";
 }
 
-void createOrderedList(const vector<vector<int>> &adjacencyMatrix, vector<int> &orderedList){
+void createOrderedList(const map<int, vector<int>> &adjacencyVectors, vector<int> &orderedList){
     //create a map to store the degree of each node, then sort it
     map<int, int> nodeDegree;
-    for (int i = 0; i < adjacencyMatrix.size(); ++i) {
-        for (auto element : adjacencyMatrix[i]) {
-            if (element == 1) {
-                nodeDegree[i]++;
-            }
-        }
+    for (const auto &keyvaluepair: adjacencyVectors) {
+        int node = keyvaluepair.first;
+        int degree = keyvaluepair.second.size();
+        nodeDegree[node] = degree;
     }
     //sort map based on degree
     vector<pair<int, int>> nodeDegreeSorted(nodeDegree.begin(), nodeDegree.end());
@@ -97,20 +95,16 @@ vector<int> getNeighbors(const vector<vector<int>> &adjacencyMatrix, int node) {
 
 
 
-void forwardAlgorithmParallel(const vector<int> &orderedList, const vector<vector<int>> &adjacencyMatrix, atomic<int> &countTriangles, int start, int end) {
+void forwardAlgorithmParallel(const vector<int> &orderedList, const map<int, vector<int>> &adjacencyVectors, atomic<int> &countTriangles, int start, int end) {
 
-    //maps of ranks of vertices based on their degree on the graph, so their position in the ordered list
     map<int, int> ranks;
     for (int i = 0; i < orderedList.size(); ++i) {
         ranks[orderedList[i]] = i;
     }
 
-
     for (int i = start; i < end; ++i) {
         int s = orderedList[i];
-        //get adjacency list of the current node
-        vector<int> neighbors = getNeighbors(adjacencyMatrix, s);
-
+        const vector<int>& neighbors = adjacencyVectors.at(s);
         unordered_set<int> u_neighbors_set(neighbors.begin(), neighbors.end());
 
         for (int t : neighbors) {
@@ -118,19 +112,16 @@ void forwardAlgorithmParallel(const vector<int> &orderedList, const vector<vecto
                 continue;
             }
 
-            // Ora, per ogni vicino 't', controlla i suoi vicini 'w'
-            std::vector<int> t_neighbors = getNeighbors(adjacencyMatrix, t);
+            const vector<int>& t_neighbors = adjacencyVectors.at(t);
             for (int v : t_neighbors) {
-                // Se v ha rank maggiore di t E v è anche vicino di s,
-                // abbiamo trovato un triangolo contato una sola volta.
                 if (ranks.at(t) < ranks.at(v) && u_neighbors_set.count(v)) {
-                    countTriangles++; // Incrementa il contatore locale del thread
+                    countTriangles++;
                 }
             }
         }
-        
     }
 }
+
 
 
 float getTotTriangles(const vector<vector<int>> adjacencyMatrix) {
@@ -180,21 +171,21 @@ int main(int argc, char **argv) {
     int numThreads = std::stoi(argv[2]);
 
     // Crea la matrice di adiacenza NxN, inizializzata con tutti 0
-    vector<vector<int>> adjacencyMatrix = populateAdjacencyMatrix(input);
+    map<int, vector<int>> adjacencyVectors = populateAdjacencyVectors(input);
 
     // Stampa la matrice risultante
     if (DEBUG){
         std::cout << "Matrice di Adiacenza per il grafo:\n\n";
-        printMatrix(adjacencyMatrix);
+        // printMatrix(adjacencyMatrix);
 
         //print with Graphviz DOT format
-        printDot(adjacencyMatrix);
+        // printDot(adjacencyMatrix);
     }
 
 
     //print ordered list of nodes based on degree
     vector<int> orderedList;
-    createOrderedList(adjacencyMatrix, orderedList);
+    createOrderedList(adjacencyVectors, orderedList);
     if (DEBUG) {
         cout << "Ordered list of nodes based on degree:\n";
         for (const auto &node : orderedList) {
@@ -217,7 +208,7 @@ int main(int argc, char **argv) {
         int end = min(start + chunkSize, (int)orderedList.size());
 
        if (start < end ) {
-           threads.emplace_back(forwardAlgorithmParallel, ref(orderedList), ref(adjacencyMatrix), ref(countTriangles), start, end);
+           threads.emplace_back(forwardAlgorithmParallel, ref(orderedList), ref(adjacencyVectors), ref(countTriangles), start, end);
        }
     }
 
