@@ -295,7 +295,7 @@ int main(int argc, char** argv) {
     for (const std::string& graph : graph_array_cap_10k) {
         for (int blockSize : blockSizes) {
             for (int desiredLaunch : desiredLaunches) {
-                if (executeWindowsProcess(PATH_CUDA_EDGE_IT + "/" + main_v1_1 + "_1", graph + " " + std::to_string(blockSize) + " " + std::to_string(desiredLaunch) + " " + gpu) != 0) {
+                if (executeWindowsProcess(PATH_CUDA_EDGE_IT + "/" + main_v1, graph + " " + std::to_string(blockSize) + " " + std::to_string(desiredLaunch) + " " + gpu) != 0) {
                     return 1;
                 }
             }
