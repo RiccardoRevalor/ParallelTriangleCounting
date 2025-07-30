@@ -166,8 +166,7 @@ int main(int argc, char** argv) {
 
     int numPhases = 0; //current phase
 
-
-
+    /*
 
     //RUN SEQUENTIALLY EVERY PROGRAM WITH EVERY PARAM
 
@@ -260,6 +259,8 @@ int main(int argc, char** argv) {
     }
     cout << "Phase " << ++numPhases << " completed: Parallel Matrix Multiplication V1 Iteration with graphs up to 10k nodes." << endl << endl;
 
+    */
+
     //CUDA Node V1, JUST BLOCKSIZE
     for (const std::string& graph : graph_array_cap_10k) {
         for (int blockSize : blockSizes) {
@@ -295,7 +296,7 @@ int main(int argc, char** argv) {
     for (const std::string& graph : graph_array_cap_10k) {
         for (int blockSize : blockSizes) {
             for (int desiredLaunch : desiredLaunches) {
-                if (executeWindowsProcess(PATH_CUDA_EDGE_IT + "/" + main_v1, graph + " " + std::to_string(blockSize) + " " + std::to_string(desiredLaunch) + " " + gpu) != 0) {
+                if (executeWindowsProcess(PATH_CUDA_EDGE_IT + "/" + main_v1_1, graph + " " + std::to_string(blockSize) + " " + std::to_string(desiredLaunch) + " " + gpu) != 0) {
                     return 1;
                 }
             }
@@ -351,6 +352,8 @@ int main(int argc, char** argv) {
     //CUDA Matrix Multiplication V1, JUST BLOCKSIZE
     for (const std::string& graph : graph_array_cap_10k) {
         for (int blockSize : blockSizes) {
+            if (blockSize > 32)
+                continue;
             if (executeWindowsProcess(PATH_CUDA_MATRIXMULTIPLICATION + "/" + main_v1, graph + " " + std::to_string(blockSize) + " " + gpu) != 0) {
                 return 1;
             }
@@ -361,7 +364,11 @@ int main(int argc, char** argv) {
     //CUDA Matrix Multiplication V2, BLOCKSIZE AND TILESIZE
     for (const std::string& graph : graph_array_cap_10k) {
         for (int blockSize : blockSizes) {
+            if (blockSize > 32)
+                continue;
             for (int tileSize : TileSize) {
+                if (tileSize > 32)
+                    continue;
                 if (executeWindowsProcess(PATH_CUDA_MATRIXMULTIPLICATION + "/" + main_v2, graph + " " + std::to_string(tileSize) + " " + std::to_string(blockSize) + " " + gpu) != 0) {
                     return 1;
                 }
