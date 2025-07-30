@@ -232,8 +232,20 @@ int main(int argc, char *argv[]) {
 
     // create cross validation output file
     std::ofstream crossValidationFile;
+
+    //REMOVE .g extension from input file name
+    size_t pos = input.find_last_of(".");
+    if (pos != std::string::npos) {
+        input = input.substr(0, pos);
+    }
+    //take just the file name without path
+    pos = input.find_last_of("/");
+    if (pos != std::string::npos) {
+        input = input.substr(pos + 1);
+    }
+
     // Corrected string concatenation for filename
-    crossValidationFile.open("../../cross_validation_output/cuda_matrixmultiplication_v1/cross_validation_output_" + gpuModel + ".csv", std::ios::app);
+    crossValidationFile.open("../../cross_validation_output/cuda_matrixmultiplication_v1/" + input + "_" + gpuModel + ".csv", std::ios::app);
     if (!crossValidationFile.is_open()) { // Use is_open() for robust check
         std::cerr << "Error opening cross validation output file!" << std::endl;
         return -1;

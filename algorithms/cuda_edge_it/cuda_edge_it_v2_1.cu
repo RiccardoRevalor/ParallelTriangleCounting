@@ -201,7 +201,7 @@ unordered_set<Edge> createEdgeSet(map<int, vector<int>> &adjacencyVectors) {
 
 int main(int argc, char *argv[]) {
 
-    if (argc != 4){
+    if (argc != 5){
         cerr << "Usage: " << argv[0] << " <input_file> <BLOCK_SIZE> <MAX_SHARED_LIST_PER_EDGE_COMBINED> <GPU_MODEL>" << endl;
         return 1;
     }

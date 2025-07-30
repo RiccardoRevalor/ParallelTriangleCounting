@@ -123,7 +123,7 @@ __global__ void EdgeIteratorAlgorithmKernel(
                 }
             }
         } else {
-            printf("Using global memory for edge %d\n", idx); // Rimuovi in produzione
+            // printf("Using global memory for edge %d\n", idx); // Rimuovi in produzione
             // Fallback to global memory access if shared memory is not suitable
             // MERGE-LIKE ALGORITHM con puntatori globali
             int p0 = v0_start; 
