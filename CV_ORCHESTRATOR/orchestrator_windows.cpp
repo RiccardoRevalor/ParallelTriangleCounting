@@ -260,7 +260,7 @@ int main(int argc, char** argv) {
     cout << "Phase " << ++numPhases << " completed: Parallel Matrix Multiplication V1 Iteration with graphs up to 10k nodes." << endl << endl;
 
 
-    */
+    
     //CUDA Node V1, JUST BLOCKSIZE
     for (const std::string& graph : graph_array_cap_10k) {
         for (int blockSize : blockSizes) {
@@ -320,7 +320,7 @@ int main(int argc, char** argv) {
 
     cout << "Phase " << ++numPhases << " completed: CUDA Edge V1_2 Iteration with graphs up to 10k nodes." << endl << endl;
 
-    
+    */
 
     //CUDA EDGE V2, JUST BLOCKSIZE
     for (const std::string& graph : graph_array) {
