@@ -316,6 +316,9 @@ int main(int argc, char** argv) {
         }
     }
 
+    cout << "Phase " << ++numPhases << " completed: CUDA Edge V1_2 Iteration with graphs up to 10k nodes." << endl << endl;
+
+
     //CUDA EDGE V2, JUST BLOCKSIZE
     for (const std::string& graph : graph_array) {
         for (int blockSize : blockSizes) {
