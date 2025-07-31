@@ -308,8 +308,10 @@ int main(int argc, char** argv) {
     //CUDA EDGE V1_2, JUST BLOCKSIZE
     for (const std::string& graph : graph_array_cap_10k) {
         for (int blockSize : blockSizes) {
-            if (executeWindowsProcess(PATH_CUDA_EDGE_IT + "/" + main_v1_2, graph + " " + std::to_string(blockSize) + " " + gpu) != 0) {
-                return 1;
+            for (int maxSharedList : maxSharedListPerEdgeCombined) {
+                if (executeWindowsProcess(PATH_CUDA_EDGE_IT + "/" + main_v1_2, graph + " " + std::to_string(blockSize) + " " + std::to_string(maxSharedList) + " " + gpu) != 0) {
+                    return 1;
+                }
             }
         }
     }
