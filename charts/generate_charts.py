@@ -116,9 +116,12 @@ def generateCharts_Line(df, output_dir, X_axis, title=None):
 
 
 if __name__ == "__main__":
-    input_file = PARALLEL_NODE_V2_INPUT_DIR + "graph_2ml_RTX_4060_M.csv" 
+
+    graph_list = ["100", "10k", "100k", "1ml", "2ml", "5ml", "10ml", "100ml"]
+
+    input_file = PARALLEL_EDGE_V2_INPUT_DIR + f"graph_10k_RTX_4060_M.csv" 
     output_dir = 'charts' 
-    title = "Parallel Node (Forward) V2 - Graph 2 ML Nodes - Intel Core i7 14th gen"
+    title = f"Parallel Edge V2 - Graph 10k Nodes - Intel Core i7 14th gen"
 
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
