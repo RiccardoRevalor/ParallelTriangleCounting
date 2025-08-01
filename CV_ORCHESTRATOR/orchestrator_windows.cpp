@@ -179,8 +179,13 @@ int main(int argc, char** argv) {
 
     cout << "Phase " << ++numPhases << " completed: Sequential Node V1 Iteration with graphs up to 10k nodes." << endl << endl;
 
+    */
+
+    std::array<std::string, 2> graph_array_cap_500k = {graph_50k, graph_500k};
+
+
     //Node V2
-    for (const std::string& graph : graph_array) {
+    for (const std::string& graph : graph_array_cap_500k) {
         if (executeWindowsProcess(PATH_SEQUENTIAL_NODE_IT + "/" + main_v2, graph + " " + gpu) != 0) {
             return 1;
         }
@@ -188,6 +193,8 @@ int main(int argc, char** argv) {
 
     cout << "Phase " << ++numPhases << " completed: Sequential Node V2 Iteration with all graphs." << endl << endl;
     
+    /*
+
     //Edge V1
     for (const std::string& graph : graph_array_cap_10k) {
         if (executeWindowsProcess(PATH_SEQUENTIAL_EDGE_IT + "/" + main_v1, graph + " " + gpu) != 0) {
@@ -197,8 +204,10 @@ int main(int argc, char** argv) {
 
     cout << "Phase " << ++numPhases << " completed: Sequential Edge V1 Iteration with graphs up to 10k nodes." << endl << endl;
 
+    */
+
     //Edge V2
-    for (const std::string& graph : graph_array) {
+    for (const std::string& graph : graph_array_cap_500k) {
         if (executeWindowsProcess(PATH_SEQUENTIAL_EDGE_IT + "/" + main_v2, graph + " " + gpu) != 0) {
             return 1;
         }
@@ -206,6 +215,7 @@ int main(int argc, char** argv) {
 
     cout << "Phase " << ++numPhases << " completed: Sequential Edge V2 Iteration with all graphs." << endl << endl;
 
+    /*
 
     //Parallel Node CPP V1
     for (const std::string& graph : graph_array_cap_10k) {
@@ -320,8 +330,6 @@ int main(int argc, char** argv) {
 
     cout << "Phase " << ++numPhases << " completed: CUDA Edge V1_2 Iteration with graphs up to 10k nodes." << endl << endl;
 
-    */
-
     //CUDA EDGE V2, JUST BLOCKSIZE
     for (const std::string& graph : graph_array) {
         for (int blockSize : blockSizes) {
@@ -385,7 +393,7 @@ int main(int argc, char** argv) {
     }
     cout << "Phase " << ++numPhases << " completed: CUDA Matrix Multiplication V2 Iteration with graphs up to 10k nodes." << endl << endl;
 
-    
+    */
 
     return 0;
 }
