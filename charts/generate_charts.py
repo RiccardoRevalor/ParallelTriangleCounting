@@ -27,7 +27,7 @@ CUDA_MATRIXMULTIPLICATION_V2_INPUT_DIR = CV_INPUT_DIR + "/cuda_matrixmultiplicat
 
 
 
-X_axis = ['NUM_THREADS']
+X_axis = ['BLOCK_SIZE']
 Y_axis = ['TOTAL_DURATION_US']
 desired_cols = X_axis + Y_axis
 
@@ -120,9 +120,9 @@ if __name__ == "__main__":
 
     graph_list = ["100", "10k", "100k", "1ml", "2ml", "5ml", "10ml", "100ml"]
 
-    input_file = PARALLEL_NODE_V3_INPUT_DIR + f"graph_100ml_RYZEN_7_7435_HS.csv" 
+    input_file = CUDA_NODE_V1_INPUT_DIR + f"graph_100ml_RTX_4060_R.csv" 
     output_dir = 'charts' 
-    title = f"Parallel Node V3 - Graph 100ml Nodes - AMD Ryzen 7 7435 HS"
+    title = f"CUDA Node V1 - Graph 100ml Nodes - RTX 4060 Laptop GPU"
 
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
