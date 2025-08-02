@@ -10,6 +10,7 @@ SEQUENTIAL_EDGE_V1_INPUT_DIR = CV_INPUT_DIR + "/seq_edge_it_v1/"
 SEQUENTIAL_EDGE_V2_INPUT_DIR = CV_INPUT_DIR + "/seq_edge_it_v2/"
 PARALLEL_NODE_V1_INPUT_DIR = CV_INPUT_DIR + "/parallel_node_it_v1/"
 PARALLEL_NODE_V2_INPUT_DIR = CV_INPUT_DIR + "/parallel_node_it_v2/"
+PARALLEL_NODE_V3_INPUT_DIR = CV_INPUT_DIR + "/parallel_node_it_v3/"
 PARALLEL_EDGE_V1_INPUT_DIR = CV_INPUT_DIR + "/parallel_edge_it_manual_threads_v1/"
 PARALLEL_EDGE_V2_INPUT_DIR = CV_INPUT_DIR + "/parallel_edge_it_manual_threads_v2/"
 PARALLEL_MATRIXMULTIPLICATION_INPUT_DIR = CV_INPUT_DIR + "/parallel_matrixmultiplication/"
@@ -119,9 +120,9 @@ if __name__ == "__main__":
 
     graph_list = ["100", "10k", "100k", "1ml", "2ml", "5ml", "10ml", "100ml"]
 
-    input_file = PARALLEL_EDGE_V2_INPUT_DIR + f"graph_10k_RTX_4060_M.csv" 
+    input_file = PARALLEL_NODE_V3_INPUT_DIR + f"graph_100ml_RYZEN_7_7435_HS.csv" 
     output_dir = 'charts' 
-    title = f"Parallel Edge V2 - Graph 10k Nodes - Intel Core i7 14th gen"
+    title = f"Parallel Node V3 - Graph 100ml Nodes - AMD Ryzen 7 7435 HS"
 
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
