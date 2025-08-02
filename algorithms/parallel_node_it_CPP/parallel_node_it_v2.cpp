@@ -83,17 +83,6 @@ void createOrderedList(const map<int, vector<int>> &adjacencyVectors, vector<int
 
 }
 
-vector<int> getNeighbors(const vector<vector<int>> &adjacencyMatrix, int node) {
-    vector<int> neighbors;
-    for (int i = 0; i < adjacencyMatrix[node].size(); ++i) {
-        if (adjacencyMatrix[node][i] == 1) {
-            neighbors.emplace_back(i);
-        }
-    }
-    return neighbors;
-}
-
-
 
 void forwardAlgorithmParallel(const vector<int> &orderedList, const map<int, vector<int>> &adjacencyVectors, atomic<int> &countTriangles, int start, int end) {
 
