@@ -40,6 +40,7 @@ const std::string main_v1_2 = "main_v1_2.exe";
 const std::string main_v2 = "main_v2.exe";
 const std::string main_v2_1 = "main_v2_1.exe";
 const std::string main_v2_2 = "main_v2_2.exe";
+const std::string main_v3 = "main_v3.exe";
 
 //thread options array
 std::array<int, 7> numThreads = { 2, 4, 6, 8, 10, 16, 24 };
@@ -166,10 +167,10 @@ int main(int argc, char** argv) {
 
     int numPhases = 0; //current phase
 
-    /*
 
     //RUN SEQUENTIALLY EVERY PROGRAM WITH EVERY PARAM
 
+    /*
     //Node V1
     for (const std::string& graph : graph_array_cap_10k) {
         if (executeWindowsProcess(PATH_SEQUENTIAL_NODE_IT + "/" + main_v1, graph + " " + gpu) != 0) {
@@ -179,9 +180,8 @@ int main(int argc, char** argv) {
 
     cout << "Phase " << ++numPhases << " completed: Sequential Node V1 Iteration with graphs up to 10k nodes." << endl << endl;
 
-    */
 
-    std::array<std::string, 2> graph_array_cap_500k = {graph_50k, graph_500k};
+    std::array<std::string, 2> graph_array_cap_500k = {"graph_50k", "graph_500k"};
 
 
     //Node V2
@@ -193,8 +193,6 @@ int main(int argc, char** argv) {
 
     cout << "Phase " << ++numPhases << " completed: Sequential Node V2 Iteration with all graphs." << endl << endl;
     
-    /*
-
     //Edge V1
     for (const std::string& graph : graph_array_cap_10k) {
         if (executeWindowsProcess(PATH_SEQUENTIAL_EDGE_IT + "/" + main_v1, graph + " " + gpu) != 0) {
@@ -204,7 +202,6 @@ int main(int argc, char** argv) {
 
     cout << "Phase " << ++numPhases << " completed: Sequential Edge V1 Iteration with graphs up to 10k nodes." << endl << endl;
 
-    */
 
     //Edge V2
     for (const std::string& graph : graph_array_cap_500k) {
@@ -237,6 +234,19 @@ int main(int argc, char** argv) {
     }
     cout << "Phase " << ++numPhases << " completed: Parallel Node V2 Iteration with all graphs." << endl << endl;
 
+    */
+    //Parallel Node V3
+    for (const std::string& graph : graph_array) {
+        for (int threads : numThreads) {
+            if (executeWindowsProcess(PATH_PARALLEL_NODE_IT_CPP + "/" + main_v3, graph + " " + std::to_string(threads) + " " + gpu) != 0) {
+                return 1;
+            }
+        }
+    }
+
+    cout << "Phase " << ++numPhases << " completed: Parallel Node V3 Iteration with all graphs." << endl << endl;
+
+    /*
     //Parallel Edge CPP V1
     for (const std::string& graph : graph_array_cap_10k) {
         for (int threads : numThreads) {
