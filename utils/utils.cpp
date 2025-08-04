@@ -4,6 +4,8 @@
 #include <sstream>
 #include <map>
 #include <algorithm>
+#include <iostream>
+#include <unordered_map>
 
 using namespace std;
 
@@ -18,6 +20,10 @@ vector<vector<int>> populateAdjacencyMatrix(string fileName) {
     
     fstream file;
     file.open(fileName, ios::in);
+    if (!file.is_open()) {
+        cerr << "Error opening file: " << fileName << endl;
+        return {};
+    }
     
     string line;
     getline(file, line);
@@ -63,6 +69,32 @@ map<int, vector<int>> populateAdjacencyVectors(string fileName){
     return adjacencyVectors;
 }
 
+//Unordered map version for faster access
+unordered_map<int, vector<int>> populateAdjacencyVectorsUnordered(string fileName){
+    int NUM_VERTICES;
+    
+    fstream file;
+    file.open(fileName, ios::in);
+
+    string line;
+    getline(file, line);
+    NUM_VERTICES = stoi(line);
+
+    unordered_map<int, vector<int>> adjacencyVectors;
+
+    while(getline(file, line)) {
+        // line in the file: 1 2 
+        stringstream ss(line);
+        int v1, v2;
+        ss >> v1 >> v2;
+
+        adjacencyVectors[v1].push_back(v2);
+        adjacencyVectors[v2].push_back(v1); //assuming undirected graph
+
+    }
+    
+    return adjacencyVectors;
+}
 
 
 void convertToCRS(const std::map<int, std::vector<int>>& adjacencyVectors,

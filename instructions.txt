@@ -1,0 +1,3 @@
+structure command:
+
+<operating system OS>, <GPU name>, <CPU name>

@@ -1,2 +1,0 @@
-main: seq_edge_it_v1.cpp ../utils/utils.cpp ../utils/matrixMath.cpp
-	g++ -std=c++20 -cpp seq_edge_it_v1.cpp ../utils/utils.cpp ../utils/matrixMath.cpp -o main_v1
