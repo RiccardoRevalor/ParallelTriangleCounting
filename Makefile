@@ -5,10 +5,12 @@
 		sequential_edge_it.v2\
 		parallel_node_it_CPP.v1\
 		parallel_node_it_CPP.v2\
+		parallel_node_it_CPP.v3\
 		parallel_matrixmultiplication_CPP\
 		parallel_edge_it_openmp\
 		parallel_edge_it_manual_threads_CPP.v1\
 		parallel_edge_it_manual_threads_CPP.v2\
+		parallel_edge_it_manual_threads_CPP.v3\
 		cuda_node_it.v1\
 		cuda_node_it.v2\
 		cuda_matrixmultiplication.v1\
@@ -27,10 +29,12 @@ all:	sequential_node_it.v1\
 	 	sequential_edge_it.v2\
 	 	parallel_node_it_CPP.v1\
 	 	parallel_node_it_CPP.v2\
+		parallel_node_it_CPP.v3\
 		parallel_matrixmultiplication_CPP\
 		parallel_edge_it_openmp\
 		parallel_edge_it_manual_threads_CPP.v1\
 		parallel_edge_it_manual_threads_CPP.v2\
+		parallel_edge_it_manual_threads_CPP.v3\
 		cuda_node_it.v1\
 		cuda_node_it.v2\
 		cuda_matrixmultiplication.v1\
@@ -89,6 +93,9 @@ parallel_node_it_CPP.v1:
 parallel_node_it_CPP.v2:
 	$(MAKE) -C algorithms/parallel_node_it_CPP -f Makefile_v2
 
+parallel_node_it_CPP.v3:
+	$(MAKE) -C algorithms/parallel_node_it_CPP -f Makefile_v3
+
 parallel_matrixmultiplication_CPP:
 	$(MAKE) -C algorithms/parallel_matrixmultiplication_CPP -f Makefile_v1
 
@@ -97,6 +104,9 @@ parallel_edge_it_openmp:
 
 parallel_edge_it_manual_threads_CPP.v1:
 	$(MAKE) -C algorithms/parallel_edge_it_manual_threads_CPP -f Makefile_v1
+
+parallel_edge_it_manual_threads_CPP.v3:
+	$(MAKE) -C algorithms/parallel_edge_it_manual_threads_CPP -f Makefile_v3
 
 parallel_edge_it_manual_threads_CPP.v2:
 	$(MAKE) -C algorithms/parallel_edge_it_manual_threads_CPP -f Makefile_v2
