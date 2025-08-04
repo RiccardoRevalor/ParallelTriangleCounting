@@ -121,9 +121,9 @@ if __name__ == "__main__":
 
     graph_list = ["100", "10k", "100k", "1ml", "2ml", "5ml", "10ml", "100ml"]
 
-    input_file = PARALLEL_EDGE_V3_INPUT_DIR+ f"graph_1ml_RYZEN_7_7435_HS.csv" 
+    input_file = PARALLEL_EDGE_V3_INPUT_DIR+ f"graph_10k_RYZEN_7_7435_HS.csv" 
     output_dir = 'charts' 
-    title = f"Parallel Edge V3 - Graph 1ml Nodes - AMD RYZEN 7 7435 HS"
+    title = f"Parallel Edge V3 - Graph 10k Nodes - AMD RYZEN 7 7435 HS"
 
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
