@@ -45,6 +45,8 @@ __global__ void ForwardAlgorithmKernel(
     int s_start = d_adjacencyList_rowPtr[s];
     int s_end = d_adjacencyList_rowPtr[s + 1];
 
+    int localCount = 0; ///OPtimization: atomicAdd just done once at the end of the thread execution
+
     // Iterate over neighbors of s
     for (int i = s_start; i < s_end; ++i) {
         int t = d_adjacencyList_colIdx[i];
@@ -62,7 +64,7 @@ __global__ void ForwardAlgorithmKernel(
 
             if (v1 == v2) {
                 if (d_ranks[v2] > d_ranks[t]) {
-                    atomicAdd(d_countTriangles, 1);
+                    localCount++;
                 }
                 ++p1;
                 ++p2;
@@ -73,6 +75,9 @@ __global__ void ForwardAlgorithmKernel(
             }
         }
     }
+
+    //add the local count to the global count
+    atomicAdd(d_countTriangles, localCount);
 }
 
 // Funzione per stampare la matrice di adiacenza

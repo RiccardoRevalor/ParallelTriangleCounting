@@ -13,6 +13,7 @@ PARALLEL_NODE_V2_INPUT_DIR = CV_INPUT_DIR + "/parallel_node_it_v2/"
 PARALLEL_NODE_V3_INPUT_DIR = CV_INPUT_DIR + "/parallel_node_it_v3/"
 PARALLEL_EDGE_V1_INPUT_DIR = CV_INPUT_DIR + "/parallel_edge_it_manual_threads_v1/"
 PARALLEL_EDGE_V2_INPUT_DIR = CV_INPUT_DIR + "/parallel_edge_it_manual_threads_v2/"
+PARALLEL_EDGE_V3_INPUT_DIR = CV_INPUT_DIR + "/parallel_edge_it_manual_threads_v3/"
 PARALLEL_MATRIXMULTIPLICATION_INPUT_DIR = CV_INPUT_DIR + "/parallel_matrixmultiplication/"
 CUDA_NODE_V1_INPUT_DIR = CV_INPUT_DIR + "/cuda_node_it_v1/"
 CUDA_NODE_V2_INPUT_DIR = CV_INPUT_DIR + "/cuda_node_it_v2/"
@@ -27,7 +28,7 @@ CUDA_MATRIXMULTIPLICATION_V2_INPUT_DIR = CV_INPUT_DIR + "/cuda_matrixmultiplicat
 
 
 
-X_axis = ['BLOCK_SIZE']
+X_axis = ['NUM_THREADS']
 Y_axis = ['TOTAL_DURATION_US']
 desired_cols = X_axis + Y_axis
 
@@ -120,9 +121,9 @@ if __name__ == "__main__":
 
     graph_list = ["100", "10k", "100k", "1ml", "2ml", "5ml", "10ml", "100ml"]
 
-    input_file = CUDA_NODE_V1_INPUT_DIR + f"graph_100ml_RTX_4060_R.csv" 
+    input_file = PARALLEL_EDGE_V3_INPUT_DIR+ f"graph_1ml_RYZEN_7_7435_HS.csv" 
     output_dir = 'charts' 
-    title = f"CUDA Node V1 - Graph 100ml Nodes - RTX 4060 Laptop GPU"
+    title = f"Parallel Edge V3 - Graph 1ml Nodes - AMD RYZEN 7 7435 HS"
 
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)

@@ -234,7 +234,6 @@ int main(int argc, char** argv) {
     }
     cout << "Phase " << ++numPhases << " completed: Parallel Node V2 Iteration with all graphs." << endl << endl;
 
-    */
     //Parallel Node V3
     for (const std::string& graph : graph_array) {
         for (int threads : numThreads) {
@@ -246,7 +245,6 @@ int main(int argc, char** argv) {
 
     cout << "Phase " << ++numPhases << " completed: Parallel Node V3 Iteration with all graphs." << endl << endl;
 
-    /*
     //Parallel Edge CPP V1
     for (const std::string& graph : graph_array_cap_10k) {
         for (int threads : numThreads) {
@@ -267,6 +265,19 @@ int main(int argc, char** argv) {
     }
     cout << "Phase " << ++numPhases << " completed: Parallel Edge V2 Iteration with all graphs." << endl << endl;
 
+    */
+    //Parallel Edge V3
+    for (const std::string& graph : graph_array) {
+        for (int threads : numThreads) {
+            if (executeWindowsProcess(PATH_PARALLEL_EDGE_IT_MANUAL_THREADS_CPP + "/" + main_v3, graph + " " + std::to_string(threads) + " " + gpu) != 0) {
+                return 1;
+            }
+        }
+    }
+
+    cout << "Phase " << ++numPhases << " completed: Parallel Edge V3 Iteration with all graphs." << endl << endl;
+
+    /*
     //parallel Edge OpenMP V1 -> TODO
 
     //Parallel Matrix Multiplication CPP V1
