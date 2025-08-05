@@ -62,8 +62,8 @@ float getTotTriangles(const vector<vector<int>> adjacencyMatrix, int NUMTHREADS,
     cout << "All threads finished." << endl;
 
     auto endTime = chrono::high_resolution_clock::now();
-    auto duration = chrono::duration_cast<chrono::microseconds>(endTime - startTime).count();
-    cout << "Time taken for parallel matrix multiplication: " << duration << " microseconds" << endl;
+    auto duration = chrono::duration_cast<chrono::nanoseconds>(endTime - startTime).count();
+    cout << "Time taken for parallel matrix multiplication: " << duration << " nanoseconds" << endl;
 
     const float factor = (float)1/ (float)6;
 
@@ -74,8 +74,8 @@ float getTotTriangles(const vector<vector<int>> adjacencyMatrix, int NUMTHREADS,
         trace += A3[i][i];          
     }
     endTime = chrono::high_resolution_clock::now();
-    duration_final = chrono::duration_cast<chrono::microseconds>(endTime - startTime).count();
-    cout << "Time taken for trace computation: " << duration_final << " microseconds" << endl;
+    duration_final = chrono::duration_cast<chrono::nanoseconds>(endTime - startTime).count();
+    cout << "Time taken for trace computation: " << duration_final << " nanoseconds" << endl;
 
     return factor*trace;
 }
