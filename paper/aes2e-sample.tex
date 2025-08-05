@@ -30,7 +30,7 @@
 \authorgroup{
 \author{Michele Carloni}
 AND \author{Riccardo Revalor}
-\email{(carlonimichele3008@gmail.com)\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad (s339423@studenti.polito.it)}
+\email{(s338856@studenti.polito.it)\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad (s339423@studenti.polito.it)}
 \affil{Politecnico di Torino, Computer Engineering}
 }
 
@@ -119,11 +119,11 @@ Here are our tests executed using graphs composed of 10k, 1 mln and 100 mln of n
 We immediately see the scalability issues are solved: if we increase the thread number, the execution time \textbf{always gets lower}. This also represents a substantial performance gain over the V2 version, with a \textbf{time reduction of approximately 82-89\%} observed across all thread configurations for a 10k node graph:
 \begin{table}[h!]
 \centering
-\caption{Execution times in microseconds and percentage decrease, graph with 10k nodes}
-\label{tab:execution_times}
+\caption{Node - Execution times in microseconds and percentage decrease, graph with 10k nodes}
+\label{tab:execution_times_1}
 \begin{tabular}{ccccc}
 \toprule
-& \#Threads & V2 Time ($\mu$s) & V3 Time ($\mu$s) & Time Decrease \% \\
+& \#Threads & V2 Time ($\mu$s) & V3 Time ($\mu$s) & Decrease \% \\
 \midrule
 & 2  & 179 554 & 32 456 & 81.92\% \\
 & 4  & 132 915 & 22 914 & 82.76\% \\
@@ -233,18 +233,22 @@ Overall, the Edge Iterator Algorithm, especially when combined with an adjacency
 
 %Head 3
 \section{Parallel Edge Iterator Algorithm}
-The Parallel Edge Iterator Algorithm is a method to concurrently count triangles in a graph by distributing the workload among multiple threads. This approach is highly effective because the triangle enumeration for each edge is an independent task. We created two concurrent versions, each with a different underlying strategy for finding common neighbors between two vertices, and their performance, tested on an \textbf{Intel(R) Core(TM) i7-14650HX (2.20 GHz)}, reveals crucial insights into the trade-offs of parallelization and workload size.
+The Parallel Edge Iterator Algorithm is a method to concurrently count triangles in a graph by distributing the workload among multiple threads. This approach is highly effective because the triangle enumeration for each edge is an independent task. We created two primary concurrent versions, each utilizing a different strategy for finding common neighbors between two vertices. \textbf{Version 1 (v1)} employs a naive nested-loop intersection, while \textbf{Version 2 (V2)} uses a more efficient two-pointer merge-like algorithm. Additionally, we developed a highly optimized \textbf{Version 3 (V3)} that incorporates advanced data structures and parallel patterns. Our performance analysis, conducted on an \textbf{Intel(R) Core(TM) i7-14650HX (2.20 GHz)} for the first 2 version and on a \textbf{Ryzen 7 7435 HS (3.10 GHz)} for the last one, reveals crucial insights into the trade-offs of parallelization and workload size.
 
-In the first, more naive version (\textbf{Parallel Edge V1}), we parallelize the outer loop that iterates over each edge. We distribute the edges among threads, and each thread is responsible for processing its assigned chunk. For a given edge (s,t), the thread finds common neighbors by performing a \textbf{naive nested-loop intersection} on the neighbor lists of s and t. This method of finding common neighbors has a worst-case time complexity of O(d(s)${\cdot}$d(t)) per edge, where d(s) and d(t) are the degrees of the vertices. The total count of triangles is managed using an std::atomic<int>, which significantly \textbf{reduces contention} compared to using mutexes. However, as shown in our experimental tests, the effectiveness of this approach is highly dependent on the graph size. On a larger graph with 10k nodes, the computational workload is substantial enough that the parallel gains outweigh the thread management overhead, leading to a consistent decrease in execution time as the number of threads is increased. The performance flattens out around 8 threads, but importantly, it does not degrade significantly even with more threads, as the workload is not large enough to create substantial overhead.
+\subsection{Parallel Edge Iterator V1}
+In this more naive version (\textbf{Parallel Edge V1}), we parallelize the outer loop that iterates over each edge. We distribute the edges among threads, and each thread is responsible for processing its assigned chunk. For a given edge $(s,t)$, the thread finds common neighbors by performing a \textbf{naive nested-loop intersection} on the neighbor lists of $s$ and $t$. This method of finding common neighbors has a worst-case time complexity of $\mathcal{O}(d(s) \cdot d(t))$ per edge, where $d(s)$ and $d(t)$ are the degrees of the vertices. The total count of triangles is managed using an \texttt{std::atomic<int>}, which significantly \textbf{reduces contention} compared to using mutexes.
+
+However, as shown in our experimental tests, the effectiveness of this approach is highly dependent on the graph size. On a larger graph with 10k nodes, the computational workload is substantial enough that the parallel gains outweigh the thread management overhead, leading to a consistent decrease in execution time as the number of threads is increased. The performance flattens out around 8 threads, but importantly, it does not degrade significantly even with more threads, as the workload is not large enough to create substantial overhead.
 \includegraphics[width=0.52\textwidth, height=10cm, keepaspectratio]{charts/Parallel Edge V1 - Graph 10k Nodes - Intel Core i7 14th gen.png}
 This is not the case for a smaller graph, such as the one with 100 nodes. On this graph, the computation is so quick that the overhead of creating and managing multiple threads becomes a dominant factor. The graph below shows erratic performance with increasing threads, even degrading significantly at 8 threads, because the operating system is spending more time on context switching and thread scheduling than the threads are spending on actual work. For such small problems, a single-threaded sequential approach is often superior.
 \includegraphics[width=0.52\textwidth, height=10cm, keepaspectratio]{charts/Parallel Edge V1 - Graph 100 Nodes - Intel Core i7 14th gen.png}
 
-To achieve a more substantial and true speedup, we developed a second, much more efficient version (\textbf{Parallel Edge V2}). This version uses an adjacency list representation and employs a crucial preprocessing step to ensure all neighbor lists are sorted. With sorted lists, each thread can find the common neighbors for its assigned edges using a \textbf{two-pointer merge-like algorithm}, which has a linear time complexity of O(d(s)+d(t)). This significant improvement in the intersection process allows the algorithm to achieve a speedup proportional to the number of threads used, \textbf{P}, with very low synchronization overhead from the std::atomic variable. The ideal parallel time complexity can be written as:
+\subsection{Parallel Edge Iterator V2}
+To achieve a more substantial and true speedup, we developed a second, much more efficient version (\textbf{Parallel Edge V2}). This version uses an adjacency list representation and employs a crucial preprocessing step to ensure all neighbor lists are sorted. With sorted lists, each thread can find the common neighbors for its assigned edges using a \textbf{two-pointer merge-like algorithm}, which has a linear time complexity of $\mathcal{O}(d(s)+d(t))$. This significant improvement in the intersection process allows the algorithm to achieve a speedup proportional to the number of threads used, \textbf{P}, with very low synchronization overhead from the \texttt{std::atomic} variable. The ideal parallel time complexity can be written as:
 \begin{align*}
 \mathcal{O}\left(\frac{\sum_{(s,t) \in E} (d(s)+d(t))}{P} + (M \log N)\right)
 \end{align*}
-where MlogN is related to the sequential pre-processing overhead of sorting the neighbor lists. This approach yields significant performance improvements across all graph sizes.
+where $M \log N$ is related to the sequential pre-processing overhead of sorting the neighbor lists. This approach yields significant performance improvements across all graph sizes.
 
 Our analysis of the V2 algorithm on various graph sizes highlights its efficiency and how it scales differently based on workload. On a 10k-node graph, we observe a dramatic and consistent drop in execution time as the number of threads increases, with an optimal point around 8 threads. The performance is consistently better than the V1 version on the same graph, demonstrating that the linear-time intersection is far superior to the naive nested-loop approach.
 \includegraphics[width=0.52\textwidth, height=10cm, keepaspectratio]{charts/Parallel Edge V2 - Graph 10k Nodes - Intel Core i7 14th gen.png}
@@ -255,14 +259,31 @@ The scaling benefits of the V2 algorithm become even more apparent on extremely 
 This trend continues with an even larger graph of 10 million nodes, but with a more pronounced effect. The computation time decreases sharply as we increase the threads up to 8, at which point the algorithm reaches its optimal performance. The intriguing aspect is that for the smaller 10k-node graph, the execution time continues to decrease (or at least flatten out) up to 24 threads, while for the larger 1M and 10M-node graphs, the execution time increases after 8 threads. This is because the massive workload of the larger graphs pushes the system to its limits, and using more than 8 threads (likely the number of high-performance cores) introduces significant overhead from resource contention. When more threads than the optimal number are used, the overhead from context switching and competition for shared resources begins to outweigh the parallelization gains, causing the total duration to increase. This behavior is not seen on the smaller 10k V1 graph because its workload is not large enough to trigger this level of contention.
 \includegraphics[width=0.52\textwidth, height=10cm, keepaspectratio]{charts/Parallel Edge V2 - Graph 10ml Nodes - Intel Core i7 14th gen.png}
 
-This analysis highlights that for effective parallelization, the choice of algorithm and data structure is as important as the number of threads. An efficient underlying algorithm is a prerequisite for achieving meaningful speedup from parallel execution.
-
-\subsection{Parallel Edge Iterator V3: final version}
-This final version of the Edge Algorithm is similar to the V3 version of the Node/Forward algorithm, whith whom it shares significant enhancements. Instead of a standard \texttt{std::map}, \texttt{std::unordered\_map} is used for the adjacency list and ranks. This provides an average-case time complexity of $\mathcal{O}(1)$ for accessing a node's neighbors, which is significantly faster than the $\mathcal{O}(\log N)$ of std::map, especially for large graphs. The parallelization is implemented using the \texttt{std::async} and \texttt{std::future} library, so by means of OS managed tasks. Within each thread, the \texttt{threadFunction} function contains its own set of optimizations: we use again \textbf{Two-Pointer Intersection} to find common neighbors by resorting to two iterators and advancing them based on which neighbor is smaller. It's important to first sort the neighbors lists of nodes $v0$ and $v1$, which is done at the beginning of the program. Overall, this approach is much faster than an $\mathcal{O}(\text{deg}_{v0} \times \text{deg}_{v1})$ naive nested loop approach or a hash-set based approach which would have hashing overhead. Also, we get rid of \textbf{redundant ranks check} by already pre-filtering the edges so that we only have edges \texttt{(u,v)} where \texttt{rank(u)<rank(v)}. This means the main loop in thread function does not need to check if (ranks.at(v0) < ranks.at(v1)). By doing this, we \textit{de facto} work with \textbf{directed edges}. Moreover, the neighbor lists (\texttt{v0\_neighbors}, \texttt{v1\_neighbors}) and the ranks map are passed by \texttt{const \&} (\textbf{constant reference}), to avoid expensive copying operations. Last but not least, each thread maintains a \textbf{local variable to count triangles}. This completely eliminates the need for thread synchronization primitives like mutexes or atomic operations, as there is no shared state being modified concurrently. The results are aggregated at the end, which is a very clean and efficient parallel pattern.
-Here are the result with 10k, 1 mln, 100 mln nodes graphs:
+\subsection{Parallel Edge Iterator V3: Final Version}
+This final version of the Edge Algorithm is similar to the V3 version of the Node/Forward algorithm, with whom it shares significant enhancements. Instead of a standard \texttt{std::map}, \texttt{std::unordered\_map} is used for the adjacency list and ranks. This provides an average-case time complexity of $\mathcal{O}(1)$ for accessing a node's neighbors, which is significantly faster than the $\mathcal{O}(\log N)$ of \texttt{std::map}, especially for large graphs. The parallelization is implemented using the \texttt{std::async} and \texttt{std::future} library, by means of OS-managed tasks. Within each thread, the \texttt{threadFunction} function contains its own set of optimizations: we use again \textbf{Two-Pointer Intersection} to find common neighbors by resorting to two iterators and advancing them based on which neighbor is smaller. It's important to first sort the neighbors lists of nodes $v0$ and $v1$, which is done at the beginning of the program. Overall, this approach is much faster than an $\mathcal{O}(\text{deg}_{v0} \times \text{deg}_{v1})$ naive nested loop approach or a hash-set based approach which would have hashing overhead. Also, we get rid of \textbf{redundant ranks check} by already pre-filtering the edges so that we only have edges $(u,v)$ where $\text{rank}(u) < \text{rank}(v)$. This means the main loop in thread function does not need to check if $(\text{ranks.at}(v0) < \text{ranks.at}(v1))$. By doing this, we \textit{de facto} work with \textbf{directed edges}. Moreover, the neighbor lists (\texttt{v0\_neighbors}, \texttt{v1\_neighbors}) and the ranks map are passed by \texttt{const \&} (\textbf{constant reference}), to avoid expensive copying operations. Last but not least, each thread maintains a \textbf{local variable to count triangles}. This completely eliminates the need for thread synchronization primitives like mutexes or atomic operations, as there is no shared state being modified concurrently. The results are aggregated at the end, which is a very clean and efficient parallel pattern.
+Here are the results using 10k, 1 million, and 100 million node graphs:
 \includegraphics[width=0.52\textwidth, height=10cm, keepaspectratio]{charts/Parallel Edge V3 - Graph 10k Nodes - AMD RYZEN 7 7435 HS.png}
 \includegraphics[width=0.52\textwidth, height=10cm, keepaspectratio]{charts/Parallel Edge V3 - Graph 1ml Nodes - AMD RYZEN 7 7435 HS.png}
 \includegraphics[width=0.52\textwidth, height=10cm, keepaspectratio]{charts/Parallel Edge V3 - Graph 100ml Nodes - AMD RYZEN 7 7435 HS.png}
+
+\begin{table}[h!]
+\centering
+\caption{Edge - Execution times in microseconds and percentage decrease, graph with 10k nodes}
+\label{tab:execution_times_2}
+\begin{tabular}{ccccc}
+\toprule
+& \#Threads & V2 Time ($\mu$s) & V3 Time ($\mu$s) & Decrease \% \\
+\midrule
+& 2  & 22012 & 5972 & 72.86\% \\
+& 4  & 15689 & 3995 & 74.54\% \\
+& 6  & 16068 & 3389 & 78.90\% \\
+& 8  & 10258 & 3052 & 70.24\% \\
+& 10 & 11149 & 2879 & 74.17\% \\
+& 16 & 12195 & 2718 & 77.71\% \\
+& 24 & 12734 & 2937 & 76.94\% \\
+\bottomrule
+\end{tabular}
+\end{table}
 
 
 
@@ -272,24 +293,95 @@ Here are the result with 10k, 1 mln, 100 mln nodes graphs:
 \section{CUDA Parallel Edge Iterator Algorithms}
 The Edge Iterator method presents a powerful approach to triangle counting on GPUs by assigning a dedicated thread to each edge, (u,v), in the graph. This strategy effectively distributes the computational workload across the thousands of processing cores available on a GPU. To facilitate efficient data handling and access, the graph's sparse adjacency list is converted to the \textbf{Compressed Row Storage (CRS)} format on the host, which is then transferred to the GPU's global memory. The core of the algorithm is implemented within a CUDA \texttt{kernel function}, where each thread independently processes its assigned edge to identify potential common neighbors. To ensure the integrity of the total triangle count, which is updated concurrently by multiple threads, the \texttt{atomicAdd} function is employed, effectively preventing race conditions without the performance overhead of mutexes.
 
-Our implementations are structured around two distinct base algorithmic approaches, which are then combined with two key optimization strategies to create a family of increasingly efficient versions. The fundamental difference between our primary algorithmic approaches lies in how each thread finds the common neighbors for its assigned edge (u,v). \textbf{Version 1 (v1)} employs a naive nested-loop intersection, while \textbf{Version 2 (v2)} utilizes a more efficient two-pointer merge-like algorithm. On top of these, we apply two optimization strategies: using chunked kernel launches and shared memory, applied both separately and in combination.
+Our implementations are structured around two distinct base algorithmic approaches, which are then combined with two key optimization strategies to create a family of increasingly efficient versions. The fundamental difference between our primary algorithmic approaches lies in how each thread finds the common neighbors for its assigned edge (u,v). \textbf{Version 1 (V1)} employs a naive nested-loop intersection, while \textbf{Version 2 (V2)} utilizes a more efficient two-pointer merge-like algorithm. On top of these, we apply two optimization strategies: using chunked kernel launches and shared memory.
 
-\subsection{v1 Implementations}
+\subsection{V1 Implementations}
 
 \begin{enumerate}
-\item \textbf{CUDA Parallel Edge v1:} This is our baseline implementation and the most straightforward version. For a given edge, each thread finds common neighbors by performing a \textbf{naive nested-loop intersection} on the adjacency lists of the two connected vertices. The time complexity of this step is O(d(u)${\cdot}$d(v)), which, while simple, can be a significant performance bottleneck for edges connected to high-degree nodes. This version launches a single kernel to process all edges in a single, large batch.
-\item \textbf{CUDA Parallel Edge v1\_1:} This version builds on the v1 algorithm by introducing a \textbf{chunked parallelization} strategy. Instead of launching a single kernel to process all edges, the algorithm partitions the edges into smaller chunks and launches a series of kernels, one for each chunk. The goal is to investigate whether this approach can improve GPU resource utilization and latency hiding by allowing the scheduler to manage smaller, more frequent parallel tasks more effectively. The underlying intersection logic within the kernel remains the same naive nested-loop approach as v1.
-\item \textbf{CUDA Parallel Edge v1\_2:} This is our most advanced implementation of the v1 family. It combines the naive nested-loop intersection of v1 with both the \textbf{chunked parallelization} and \textbf{shared memory} strategies. For each edge, the thread first copies the adjacency lists from global memory to the faster shared memory. It then performs the naive nested-loop intersection directly from shared memory, drastically reducing memory access latency and leading to a significant performance improvement over versions that rely solely on global memory.
+\item \textbf{CUDA Parallel Edge V1:} This is our baseline implementation and the most straightforward version. For a given edge, each thread finds common neighbors by performing a \textbf{naive nested-loop intersection} on the adjacency lists of the two connected vertices. The time complexity of this step is $\mathcal{O}(d(u) \cdot d(v))$, where $d(u)$ and $d(v)$ are the degrees of the vertices. This quadratic complexity can be a significant performance bottleneck for edges connected to high-degree nodes. This version launches a single kernel to process all edges in a single, large batch.
+
+On a massive 100 million-node graph, as shown below, we observe a significant initial decrease in execution time as the \texttt{BLOCK\_SIZE} increases from 8 to 128. This indicates that increasing the number of threads per block helps to better utilize the Streaming Multiprocessors (SMs) on the RTX 4060 GPU, improving occupancy and hiding memory access latency. However, a sharp increase in execution time is seen at \texttt{BLOCK\_SIZE = 256}, followed by a slight decrease at \texttt{BLOCK\_SIZE = 512}. This fluctuating behavior, particularly the spike at 256, suggests that at larger block sizes, the kernel encounters resource limitations (e.g., exceeding register limits or shared memory per block) that reduce the number of active warps or blocks per SM, leading to a significant drop in performance despite the increased thread count. The optimal performance is achieved around \texttt{BLOCK\_SIZE = 128} for this specific graph and GPU.
+
+\includegraphics[width=0.52\textwidth, height=10cm, keepaspectratio]{charts/Cuda Edge V1 - Graph 100ml Nodes - RTX 4060.png}
+
+\item \textbf{CUDA Parallel Edge V1\_1:}  This version builds on the V1 algorithm by introducing a \textbf{chunked parallelization} strategy. Instead of launching a single kernel to process all edges, the algorithm partitions the edges into smaller chunks and launches a series of kernels, one for each chunk. The goal is to investigate whether this approach can improve GPU resource utilization and latency hiding by allowing the scheduler to manage smaller, more frequent parallel tasks more effectively. The underlying intersection logic within the kernel remains the same naive nested-loop approach as V1.
+
+The graph below illustrates the performance of CUDA Edge V1.1, showing the total duration as a function of the number of kernel launches for various \texttt{BLOCK\_SIZE} configurations. A clear trend emerges: as the number of kernel launches increases, the total execution time consistently rises across all block sizes. This is due to the inherent overhead associated with each kernel launch, including the time taken for setup, scheduling, and synchronization. While chunking can sometimes improve GPU occupancy, for this algorithm and workload, the overhead of multiple launches outweighs any potential benefits, especially as the number of launches grows. Interestingly, different \texttt{BLOCK\_SIZE} values show similar increasing trends, indicating that the overhead of kernel launches is a dominant factor regardless of how many threads are within each block. The lines for \texttt{BLOCK\_SIZE = 16} and \texttt{BLOCK\_SIZE = 32} appear to offer slightly better performance at lower launch counts, but the overall penalty for excessive launches is evident across the board.
+\includegraphics[width=0.52\textwidth, height=10cm, keepaspectratio]{charts/Cuda Edge v1_1 - TOTAL_DURATION_US_vs_DESIRED_LAUNCHES_KERNEL_grouped_by_BLOCK_SIZE.png}
 \end{enumerate}
 
+\subsection{V2 implementations}
+
+\begin{enumerate}
+\item \textbf{CUDA Parallel Edge V2:} This version represents a significant algorithmic improvement over the V1 family. It employs a more efficient \textbf{two-pointer merge-like algorithm} for finding common neighbors, which has a linear time complexity of $\mathcal{O}(d(u) + d(v))$. This version assigns one thread to manage one edge and launches a single kernel to process all edges. The efficiency gain comes primarily from the improved intersection algorithm, making it much faster, especially for graphs with high-degree nodes, compared to the V1 implementations.
+
+The performance of CUDA Edge V2 on a 100 million-node graph, as depicted below, shows a distinct characteristic. The execution time initially decreases sharply as the \texttt{BLOCK\_SIZE} increases from 8 to 32, indicating efficient utilization of GPU resources. However, the curve then shows a slight increase at \texttt{BLOCK\_SIZE = 64}, followed by a more noticeable increase at \texttt{BLOCK\_SIZE = 128}, before decreasing again at \texttt{BLOCK\_SIZE = 256} and finally increasing at \texttt{BLOCK\_SIZE = 512}. The overall minimum performance is achieved around \texttt{BLOCK\_SIZE = 32}. This fluctuating behavior suggests that while the merge-like algorithm is efficient, the highest time in V2 (3441 us) is still better than the lowest time in V1 (5534 us), the optimal \texttt{BLOCK\_SIZE} is critical for maximizing Streaming Multiprocessor (SM) occupancy and minimizing resource contention (e.g., register pressure, shared memory usage) on the RTX 4060. The initial dip indicates the benefit of parallelization, but the subsequent oscillations point to a sensitive balance between thread count per block and available SM resources.
+\includegraphics[width=0.52\textwidth, height=10cm, keepaspectratio]{charts/Cuda Edge V2 - Graph 100ml Nodes - RTX 4060.png}
+
+\item \textbf{CUDA Parallel Edge V2\_1:} This implementation builds on the V2 algorithm by introducing a specific shared memory optimization. In this version, \textbf{each block manages a single edge}. Threads within that block cooperatively load the adjacency lists of the edge's endpoints into shared memory. After a synchronization barrier, a single thread then performs the \textbf{two-pointer merge-like intersection} on this faster shared data. This strategy aims to reduce global memory latency for edges whose neighbor lists fit entirely within shared memory, further optimizing the already efficient V2 algorithm.
+
+The graph below illustrates the performance of CUDA Edge V2\_1, showing the total duration as a function of "Max Shared List Per Edge Combined" (the maximum combined length of neighbor lists that will be loaded into shared memory) for various \texttt{BLOCK\_SIZE} configurations. A clear trend is that for most \texttt{BLOCK\_SIZE} values, increasing the \texttt{Max Shared List Per Edge Combined} generally leads to an increase in total duration. This is because reserving more shared memory per block can reduce the number of active blocks or warps that can run concurrently on an SM, thereby lowering occupancy and overall throughput. Smaller \texttt{BLOCK\_SIZE} values (e.g., 8 and 16) generally show better performance, especially at lower shared memory thresholds. This suggests that for a single edge processed per block, a smaller block size might be more efficient in terms of resource utilization and occupancy, allowing more blocks to be scheduled simultaneously. The sharp increases for larger \texttt{BLOCK\_SIZE} values (e.g., 256, 512) indicate that exceeding certain shared memory limits per block can severely degrade performance due to resource constraints. This highlights the critical balance between shared memory usage and overall GPU occupancy.
+\includegraphics[width=0.52\textwidth, height=10cm, keepaspectratio]{charts/CUDA Edge V2_1 - Total Duration vs Max Shared - Grouped by Block Size.png}
+
+\item \textbf{CUDA Parallel Edge V2\_2:} This version also utilizes the efficient \textbf{two-pointer merge-like algorithm} and incorporates \textbf{shared memory}, but with a different thread-to-edge mapping compared to V2\_1. Here, \textbf{one thread manages one edge}, similar to the base V2. However, each thread attempts to load the adjacency lists for its assigned edge into a dynamically allocated portion of shared memory before performing the intersection. This allows multiple edges to be processed concurrently within a single block, each benefiting from faster shared memory access if their neighbor lists are small enough.
+
+The graph below presents the performance of CUDA Edge V2\_2, showing the total duration against "Max Shared List Per Edge Combined" for different \texttt{BLOCK\_SIZE} values. This graph is notably more complex than V2\_1, indicating a more intricate interplay between \texttt{BLOCK\_SIZE} and shared memory usage. For smaller \texttt{BLOCK\_SIZE} values (e.g., 8, 16, 32), the performance tends to be lower (faster execution) and less sensitive to changes in \texttt{Max Shared List Per Edge Combined} at lower values. As \texttt{Max Shared List Per Edge Combined} increases, the duration generally rises, especially for larger \texttt{BLOCK\_SIZE} values. This reinforces the idea that excessive shared memory allocation per thread can limit the number of concurrent blocks, thereby reducing overall GPU utilization. The optimal performance appears to be achieved with smaller \texttt{BLOCK\_SIZE} values and lower shared memory thresholds, where the benefits of faster memory access are maximized without incurring significant resource contention or limiting concurrency. The varying slopes and intersections of the lines suggest that finding the optimal balance for \texttt{BLOCK\_SIZE} and \texttt{Max Shared List Per Edge Combined} is crucial for maximizing the efficiency of this shared-memory optimized, one-thread-per-edge approach.
+\includegraphics[width=0.52\textwidth, height=10cm, keepaspectratio]{charts/CUDA Edge V2_2 - Total Duration vs Max Shared - Grouped by Block Size.png}
+\end{enumerate}
+
+\subsection{V3 implementations}
+The main problem encountered in the previous versions of the algorithm was the \textbf{lack of scalability}: the program was relatively fast, however, if we incremented the number of threads within each block, the performances got worse. We tried to overcome this issue with the V3 version of the program, in which we created a Kernel function implementing a \textbf{dynamic work queue for edge iteration}. This kernel processes edges in a dynamic manner, allowing threads to fetch work from a global queue. This way, threads can dynamically take on work as they finish processing previous edges, \textbf{improving load balancing} and potentially reducing idle time: a "lucky" thread which had to process an edge of lower degree nodes does not remain inactive once it has finished its work, but can instantly process another edge, and so on. In other words, faster threads can take on more work, while slower threads will naturally catch up, leading to a more efficient use of GPU resources. However, this noticeable improvement in scalability and robustness comes at a cost: \textbf{we sacrifice execution time}, which increases approximately by a factor of 10 using the 100 million nodes graph (i.e, going from approx. 3 ms to approx. 30 ms). This slowdown is related to the nature of the global dynamic queue and especially to the way workers access it (i.e. by performing \text{atomicAdd}, which introduces atomic contention between thousands of threads. Look at table \ref{tab:comparison} for a more detailed comparisonn of the versions of the program.
+Here's the performance observed using a 1 million and a 100 million nodes graphs:
+\includegraphics[width=0.52\textwidth, height=10cm, keepaspectratio]{charts/Cuda Edge V3 - Graph 1 ML Nodes - RTX 4060 Laptop GPU.png }
+\includegraphics[width=0.52\textwidth, height=10cm, keepaspectratio]{charts/Cuda Edge V3 - Graph 100ml Nodes - RTX 4060 Laptop GPU.png }
+\begin{table*}[h!]
+    \centering
+    \begin{tabular}{|l|l|l|}
+        \hline
+        \textbf{Characteristic} & \textbf{Version V1/V2} & \textbf{V3 (Global Dynamic)} \\ \hline
+        \textbf{Task Assignment} & Local mathematical calculation & Atomic access to a global queue \\ \hline
+        \textbf{Assignment Overhead} & Almost Zero & Significant (contention on \texttt{atomicAdd}) \\ \hline
+        \textbf{Load Balancing} & Poor (depends on the data) & Excellent \\ \hline
+        \textbf{Scalability with \textbf{\texttt{BLOCK\_SIZE}}} & Poor (performance worsens) & Good (performance scales) \\ \hline
+        \textbf{Absolute Performance} & Higher (in its sweet spot) & Lower (due to overhead) \\ \hline
+    \end{tabular}
+    \caption{Comparison of various versions of CUDA Edge Algorithm.}
+    \label{tab:comparison}
+\end{table*}
+We can observe that, when increasing the block size, the performances either get better of reach a \textit{plateau}, this is is huge improvement over the previous versions, which saw a dramatic decrease in execution speed.
+To lower the execution time, we can also resort to an hybrid approach which puts together the strengths of all the approaches.
+In the V3\_1 version of the algorithm we introduced an hybrid kernel with static assignation between blocks, and dynamic for the threads inside each block, using \textbf{shared memory}. More in details, we use shared memory to store a block-level counter which acts as index for the block work queue, then each threads performs a dynamic work cycle by pulling the work index from the work queue in the sahred memory. Using the same graph and setting at 8 the block size parameter, this second approach lets us save almost \textbf{15\%} of execution time (going from 35 ms to 30 ms).
+\subsection{CUDA Edge Performance Summary}
+The performance analysis of the CUDA Edge Iterator algorithms reveals distinct characteristics across its versions. \textbf{CUDA Edge V1}, utilizing a naive nested-loop intersection, shows an initial performance improvement with increasing \texttt{BLOCK\_SIZE} on a 100 million-node graph, reaching an optimum around $5500 \mu s$ at \texttt{BLOCK\_SIZE = 128}, but then degrades due to resource contention at larger block sizes. \textbf{CUDA Edge V1\_1}, which introduces chunked kernel launches to V1's core, generally exhibits increased total duration with more launches, indicating that kernel launch overhead often outweighs any benefits from finer-grained task management. In contrast, \textbf{CUDA Edge V2} and \textbf{V2\_2} (both employing the efficient two-pointer merge-like algorithm with one thread per edge) achieve significantly superior performance, consistently operating within the $3400 \mu s$ to $4400 \mu s$ range, underscoring the importance of algorithmic efficiency. V2\_2 further optimizes with shared memory, though its peak performance is sensitive to \texttt{BLOCK\_SIZE} and shared memory allocation. Conversely, \textbf{CUDA Edge V2\_1}, which maps one block per edge and uses shared memory, generally performs worse than other V2 variants, with times ranging from $5000 \mu s$ and escalating dramatically. This suggests that its block-to-edge mapping and shared memory strategy can lead to poor GPU occupancy and inefficient resource utilization, negating its algorithmic advantages.
 
 
 
 
 
+%Head 5
+
+\section{Matrix Multiplication Algorithms}
+For the Matrix Multiplication algorithm, we choose to immediately start talking about the C++ parallel version, without mentioning sequential approaches. This is because the sequential version of the matrix cubing steps of the algorithm would have a very high time complexity, making it inefficient for large graphs. Since we are required to multiply matrix $A$ by itself for three times, in the worst case the complexity would be $\mathcal{O}(n^3)$. So, in short words, a parallel version of the algorithm is much needed in this case.
+\subsection{Parallel Matrix Multiplication }
+Although the overall computational workload (the total number of operations) remains the same, with the parallel version we aim at improve the \textbf{practical performance} (i.e. the execution time) by using distributing all the work across multiple threads. More precisely, each matrix multiplication is divided among $p$ threads. The work is split by rows, with each thread handling a chunk of rows. The time it takes for a single thread to complete its portion of the work is roughly the total work divided by the number of threads, so $\mathcal{O}(n^3 / p)$. Then, since all threads are working concurrently, the total execution time is determined by the longest-running thread. In a balanced workload, this is the time it takes for any single thread to finish its work. Therefore, Therefore, the time complexity of the parallelized algorithm is, assuming a balanced workload, approximately:
+$$
+\mathcal{O}(n^3 / p)
+$$
+The C++ code implements this parallel strategy to compute $A^3$ in two distinct stages:
+
+\begin{enumerate}
+    \item \textbf{Stage 1: Computing $A^2 = A \times A$}
+    \newline The algorithm launches $p$ threads, each responsible for computing a specific range of rows of the resulting $A^2$ matrix. A synchronization barrier (via \texttt{join()}) ensures that all threads complete their work before moving to the next stage.
+
+    \item \textbf{Stage 2: Computing $A^3 = A^2 \times A$}
+    \newline A new set of $p$ threads is launched. This time, they use the previously computed $A^2$ matrix and the original $A$ matrix as input. A final synchronization barrier ensures the completion of this second multiplication before the final $A^3$ matrix is returned.
+\end{enumerate}
+A key optimization for sparse matrices is included within the core multiplication function. By checking for zero elements (\texttt{if (A[i][k] != 0)}), the algorithm \textbf{avoids unnecessary computations}, leading to significant performance gains on average-case scenarios for sparse graphs.
+At the end, we linearly compute the \textbf{Trace} of the resulting matrix and multiply it by $\frac{1}{6}$.
 
 
-
+%Head 6
+\section{Cuda Matrix Multiplication}
 
 
 
