@@ -69,10 +69,60 @@ def generateMultiLineChart(df, output_dir, x_col, y_col, group_col, title=None):
     plt.close()
     print(f"Multi-line chart saved to {output_path}")
 
+
+def generateMultiGraphicsCardChart(input_gpu0, input_gpu1, output_dir, x_axis, y_axis, title=None, GPU0_label='GPU 0', GPU1_label='GPU 1'):
+    """
+    Generate a multi-line chart for two GPUs.
+    """
+    df0 = readCSV(input_gpu0)
+    df1 = readCSV(input_gpu1)
+
+    if df0.empty or df1.empty:
+        print("One or both DataFrames are empty. No chart to generate.")
+        return
+
+    # Use plt.subplots() to create both a figure and an axes object
+    fig, ax = plt.subplots(figsize=(12, 7))
+
+    # 2 series, one for each GPU
+    ax.plot(df0[x_axis], df0[y_axis], marker='o', linestyle='-', color='blue', label=GPU0_label)
+    ax.plot(df1[x_axis], df1[y_axis], marker='o', linestyle='-', color='orange', label=GPU1_label)
+
+    ax.set_title(title if title else f'{y_axis} vs {x_axis} (Multi-GPU)')
+    ax.set_xlabel(x_axis.replace('_', ' ').title())
+    ax.set_ylabel('Total Duration (µs)' if y_axis == 'TOTAL_DURATION_US' else y_axis)
+    ax.legend(title='GPU')
+    ax.grid(True)
+
+    ax.set_xticks(df0[x_axis].unique())
+    ax.set_xticklabels(df0[x_axis].unique(), rotation=0)
+
+
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
+
+    filename = f'{y_axis}_vs_{x_axis}_multi_gpu.png'
+    output_path = os.path.join(output_dir, filename)
+    plt.savefig(output_path)
+    plt.close()
+    print(f"Multi-GPU chart saved to {output_path}")
+
+
 if __name__ == "__main__":
+    """
     input_file = CUDA_EDGE_V2_2_INPUT_DIR + "graph_100ml_RTX_4060_M.csv"
     output_dir = "charts"
     title = "CUDA Edge V2_2 - Total Duration vs Max Shared - Grouped by Block Size"
 
     df = readCSV(input_file)
     generateMultiLineChart(df, output_dir, x_col='MAX_SHARED_LIST_PER_EDGE_COMBINED', y_col='TOTAL_DURATION_US', group_col='BLOCK_SIZE', title=title)
+    """
+
+    #multi GPU chart
+    input_gpu0 = PARALLEL_MATRIXMULTIPLICATION_INPUT_DIR + "graph_10k_RTX_4060_M.csv"
+    input_gpu1 = PARALLEL_MATRIXMULTIPLICATION_INPUT_DIR + "graph_10k_RTX_2060_SUP_M.csv"
+    output_dir = "charts"
+    title = "Parallel Matrix Multiplication - 10k Nodes - Intel Core i7 14th gen vs Intel Core i9 9th gen"
+
+    generateMultiGraphicsCardChart(input_gpu0, input_gpu1, output_dir, x_axis='NUM_THREADS', y_axis='TOTAL_DURATION_US', title=title, GPU0_label="i7 14th gen", GPU1_label="i9 9th gen")
+
