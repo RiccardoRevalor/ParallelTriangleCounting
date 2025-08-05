@@ -1187,16 +1187,16 @@
 \def\@jnum{}
 \def\@jmonth{}
 \def\@jyear{}
-\def\@jname{J. Audio Eng. Sco.}
+\def\@jname{}
 %
 \def\oddfolio{{\foliofont\thepage}}
 \def\evenfolio{{\foliofont\thepage}}
 %
 \def\ps@headings{%
-    \def\@evenhead{{\rhfont\leftmark}\hfil{\rhfont PAPERS}}%
-    \def\@oddhead{{\rhfont PAPERS}\hfil{\rhfont\rightmark}}%
-    \def\@evenfoot{\hbox to \textwidth{\rhfont\evenfolio\hfill \@jname, Vol.\ \@jvol,\ No.\ \@jnum,\ \@jyear\ \@jmonth}}%
-    \def\@oddfoot{\hbox to \textwidth{\rhfont \@jname, Vol.\ \@jvol,\ No.\ \@jnum,\ \@jyear\ \@jmonth\hfill\oddfolio}}%
+    \def\@evenhead{{\rhfont\leftmark}\hfil{\rhfont Parallel Triangle Counting Algorithms}}%
+    \def\@oddhead{{\rhfont Parallel Triangle Counting Algorithms}\hfil{\rhfont\rightmark}}%
+    \def\@evenfoot{\hbox to \textwidth{\rhfont\thepage\hfill}}% % Semplificato
+    \def\@oddfoot{\hbox to \textwidth{\hfill\rhfont\thepage}}% % Semplificato
     \let\@mkboth\markboth
     \def\chaptermark##1{\markboth{##1}{##1}}%
 }
@@ -1216,10 +1216,10 @@
 \def\bottomfoot#1{\gdef\bottom@foot{#1}}
 %
 \def\ps@plain{\let\@mkboth\@gobbletwo%
-       \def\@evenhead{\hbox to \textwidth{\hfill\rhfont PAPERS}}%
-       \def\@oddhead{\hbox to \textwidth{\rhfont PAPERS\hfill}}%
-       \def\@evenfoot{\hbox to \textwidth{\rhfont\thepage\hfill \@jname, Vol.\ \@jvol,\ No.\ \@jnum,\ \@jyear\ \@jmonth}}%
-       \def\@oddfoot{\hbox to \textwidth{\rhfont \@jname, Vol.\ \@jvol,\ No.\ \@jnum,\ \@jyear\ \@jmonth\hfill\thepage}}%
+    \def\@evenhead{\hbox to \textwidth{\hfill\rhfont Parallel Triangle Counting Algorithms}}% % Mantenuto
+    \def\@oddhead{\hbox to \textwidth{\rhfont Parallel Triangle Counting Algorithms\hfill}}% % Mantenuto
+    \def\@evenfoot{\hbox to \textwidth{\rhfont\thepage\hfill}}% % Semplificato
+    \def\@oddfoot{\hbox to \textwidth{\hfill\rhfont\thepage}}% % Semplificato
 }%
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  End Page styles  %%%%%%%%%%%%%%%%%%%%%%%%
