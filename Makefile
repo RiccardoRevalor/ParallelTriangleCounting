@@ -21,6 +21,7 @@
 		cuda_edge_it.v2\
 		cuda_edge_it.v2_1\
 		cuda_edge_it.v2_2\
+		cuda_edge_it.v3\
 		ORCHESTRATOR
 
 all:	sequential_node_it.v1\
@@ -45,6 +46,7 @@ all:	sequential_node_it.v1\
 		cuda_edge_it.v2\
 		cuda_edge_it.v2_1\
 		cuda_edge_it.v2_2\
+		cuda_edge_it.v3\
 		ORCHESTRATOR
 
 
@@ -140,6 +142,8 @@ cuda_edge_it.v2_1:
 
 cuda_edge_it.v2_2:
 	$(MAKE) -C algorithms/cuda_edge_it -f Makefile_v2_2 OS=$(OS) NVCC=$(NVCC) VS_PATH=$(VS_PATH)
+cuda_edge_it.v3:
+	$(MAKE) -C algorithms/cuda_edge_it -f Makefile_v3 OS=$(OS) NVCC=$(NVCC) VS_PATH=$(VS_PATH)
 
 
 ORCHESTRATOR:
