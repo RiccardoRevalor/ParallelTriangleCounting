@@ -23,6 +23,7 @@ CUDA_EDGE_V1_2_INPUT_DIR = CV_INPUT_DIR + "/cuda_edge_it_v1_2/"
 CUDA_EDGE_V2_INPUT_DIR = CV_INPUT_DIR + "/cuda_edge_it_v2/"
 CUDA_EDGE_V2_1_INPUT_DIR = CV_INPUT_DIR + "/cuda_edge_it_v2_1/"
 CUDA_EDGE_V2_2_INPUT_DIR = CV_INPUT_DIR + "/cuda_edge_it_v2_2/"
+CUDA_EDGE_V3_INPUT_DIR = CV_INPUT_DIR + "/cuda_edge_it_v3/"
 CUDA_MATRIXMULTIPLICATION_V1_INPUT_DIR = CV_INPUT_DIR + "/cuda_matrixmultiplication_v1/"
 CUDA_MATRIXMULTIPLICATION_V2_INPUT_DIR = CV_INPUT_DIR + "/cuda_matrixmultiplication_v2/"
 
@@ -122,9 +123,9 @@ def generateCharts_Line(df, output_dir, X_axis, title=None):
 if __name__ == "__main__":
 
 
-    input_file = CUDA_EDGE_V1_INPUT_DIR+ f"graph_100ml_RTX_4060_M.csv" 
+    input_file = CUDA_EDGE_V3_INPUT_DIR+ f"graph_100ml_RTX_4060_R.csv" 
     output_dir = 'charts' 
-    title = f"Cuda Edge V1 - Graph 100ml Nodes - RTX 4060"
+    title = f"Cuda Edge V3 - Graph 100ml Nodes - RTX 4060 Laptop GPU"
 
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
