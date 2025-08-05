@@ -1,2 +1,4 @@
 *.g linguist-vendored
 graph_file/** linguist-vendored
+*.tex linguist-vendored
+paper/** linguist-vendored
