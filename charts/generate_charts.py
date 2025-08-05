@@ -123,9 +123,9 @@ def generateCharts_Line(df, output_dir, X_axis, title=None):
 if __name__ == "__main__":
 
 
-    input_file = CUDA_EDGE_V3_INPUT_DIR+ f"graph_100ml_RTX_4060_R.csv" 
+    input_file = CUDA_EDGE_V3_INPUT_DIR+ f"graph_1ml_RTX_4060_R.csv" 
     output_dir = 'charts' 
-    title = f"Cuda Edge V3 - Graph 100ml Nodes - RTX 4060 Laptop GPU"
+    title = f"Cuda Edge V3 - Graph 1 ML Nodes - RTX 4060 Laptop GPU"
 
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
