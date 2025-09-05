@@ -4,8 +4,6 @@
 This project evaluates the performance of different implementations of the **Forward Algorithm** for counting triangles in a graph.  
 It provides both a sequential baseline and parallelized versions, where parallelization is achieved using **CPU multithreading** and **GPU acceleration**.
 
----
-
 ## Getting Started
 
 The following guide explains how to set up and run the program on a **Windows** machine.
@@ -18,8 +16,6 @@ The following guide explains how to set up and run the program on a **Windows** 
 - `cl.exe` from **Visual Studio Tools**  
 
 > ⚠️ Installation of the CUDA Toolkit, `make`, and `g++` is not covered in this guide.
-
----
 
 ### Configure the Makefile
 
@@ -34,8 +30,6 @@ The following guide explains how to set up and run the program on a **Windows** 
 6. Paste the path between quotes (`""`) in the variable `VS_PATH_USER`.  
 
 ![cl.exe setup](./img/var_1.jpg)
-
----
 
 ### Compilation
 
@@ -60,8 +54,6 @@ make OS=windows
 ``` 
 
 ![orchestrator_makefile](./img/orchestrator_makefile.jpg)
-
----
 
 ### run orchestrator
 From the `CV_ORCHESTRATOR` folder, run the Orchestrator with the following command, replacing <GPU_MODEL> with the name of your GPU:
