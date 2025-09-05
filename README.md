@@ -1,59 +1,74 @@
 ## About the Project
 ![Introduction Picture](./img/intro_pic.jpg)
 
-This project evaluates the performance of different implementations of the Forward Algorithm for counting triangles in a graph. We provide both a sequential baseline and parallelized versions, where parallelization is achieved using CPU multithreading and GPU acceleration.
+This project evaluates the performance of different implementations of the **Forward Algorithm** for counting triangles in a graph.  
+It provides both a sequential baseline and parallelized versions, where parallelization is achieved using **CPU multithreading** and **GPU acceleration**.
 
-## Getting started
+---
 
-The following is a complete guide on how to set up and run the program correctly on a windows machine.
+## Getting Started
+
+The following guide explains how to set up and run the program on a **Windows** machine.
 
 ### Prerequisites
-- Computer with a windows operating system
-- NVIDIA GPU that can support the CUDA toolkit.
-- At least 16GB of ram
-- make and g++.
-- cl.exe from Visual Studio Tools.
+- A Windows computer  
+- An **NVIDIA GPU** compatible with the CUDA Toolkit  
+- At least **16 GB of RAM**  
+- `make` and `g++`  
+- `cl.exe` from **Visual Studio Tools**  
 
-The setup phase of the CUDA toolkit, make and g++ is not covered in this guide. 
+> ⚠️ Installation of the CUDA Toolkit, `make`, and `g++` is not covered in this guide.
 
-### set up variables in make file
+---
 
-- copy the path to nvcc.exe
-- open the Makefile in the project folder
-- paste the path between "" of the variable `nvcc_win`
+### Configure the Makefile
 
-![var_2](./img/var_2.jpg)
+1. Copy the path to `nvcc.exe`.  
+2. Open the **Makefile** in the project folder.  
+3. Paste the path between quotes (`""`) in the variable `nvcc_win`.  
 
-- Copy the path to cl.exe.
-- open the Makefile in the project folder
-- paste the path between "" of the variable `VS_PATH_USER`
+![nvcc setup](./img/var_2.jpg)
 
-![var_1](./img/var_1.jpg)
+4. Copy the path to `cl.exe`.  
+5. Open the **Makefile** again.  
+6. Paste the path between quotes (`""`) in the variable `VS_PATH_USER`.  
+
+![cl.exe setup](./img/var_1.jpg)
+
+---
 
 ### Compilation
 
-#### Compile algorithms
-The Makefile in the project folder automatically compiles all the algorithms.
-Run the following command to compile the algorithms:
-```
+#### Compile Algorithms
+The **Makefile** in the project folder automatically compiles all algorithms.  
+Run the following command:
+
+```bash
 make OS=windows BUILD_CONFIG=U
+
 ```
 
 ![main_makefile](./img/main_makefile.jpg)
 
 #### Compile Orchestrator
-The Orchestrator is the program located in the folder `CV_ORCHESTRATOR` that tests the algorithms all in one single run and create csv files for each algorithm about the performance in the folder `cross_validation_output`. In the subdirectory CV_ORCHESTRATOR run the following program to compile orchestrator_windows.cpp
-```
+The **Orchestrator** (in the folder `CV_ORCHESTRATOR`) runs all algorithms in a single execution and saves performance results in the `cross_validation_output folder`.
+
+To compile `orchestrator_windows.cpp`, go to the `CV_ORCHESTRATOR` subdirectory and run:
+
+```bash
 make OS=windows
 ``` 
 
 ![orchestrator_makefile](./img/orchestrator_makefile.jpg)
 
+---
+
 ### run orchestrator
-In the folder `CV_ORCHESTRATOR` run the orchestrator through the following command, replacing <GPU_MODEL> with the name of your GPU:
-```
+From the `CV_ORCHESTRATOR` folder, run the Orchestrator with the following command, replacing <GPU_MODEL> with the name of your GPU:
+
+```bash
 .\orchestrator_windows.exe <GPU_MODEL>
 ```
 
 ### results
-Each algorithm saves its performance in a specific folder (distinguished by its name) in the folder cross_validation_output through a csv file. The csv file name has the following format: `graphName_GPU_User.csv`.
+Each algorithm saves its performance results in a dedicated folder (named after the algorithm) inside `cross_validation_output`. The results are stored as .csv files with the following format `graphName_GPU_User.csv`.
