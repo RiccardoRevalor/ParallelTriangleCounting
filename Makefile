@@ -54,19 +54,22 @@ all:	sequential_node_it.v1\
 
 # Compiler paths
 nvcc_linux := /usr/local/cuda-12.9/bin/nvcc
-nvcc_win := C:/Program\ Files/NVIDIA\ GPU\ Computing\ Toolkit/CUDA/v12.9/bin/nvcc.exe
+nvcc_win := "C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v12.9/bin/nvcc.exe"
 
 # cl.exe for windows
 BUILD_CONFIG ?= M
 VS_PATH_RICCARDO := "C:/Program Files (x86)/Microsoft Visual Studio/2019/BuildTools/VC/Tools/MSVC/14.29.30133/bin/Hostx64/x64"
-VS_PATH_MICHELE := C:/Program\ Files/Microsoft\ Visual\ Studio/2022/Community/VC/Tools/MSVC/14.44.35207/bin/Hostx64/x64
+VS_PATH_MICHELE := "C:/Program Files/Microsoft Visual Studio/2022/Community/VC/Tools/MSVC/14.44.35207/bin/Hostx64/x64"
+VS_PATH_USER := ""
 
 ifeq ($(BUILD_CONFIG),R)
     VS_PATH := $(VS_PATH_RICCARDO)
 else ifeq ($(BUILD_CONFIG),M)
     VS_PATH := $(VS_PATH_MICHELE)
+else ifeq ($(BUILD_CONFIG),U)
+	VS_PATH := $(VS_PATH_USER)
 else
-    $(error BUILD_CONFIG deve essere 'R' o 'M'. Esempio: make BUILD_CONFIG=R)
+    $(error BUILD_CONFIG must be 'R', 'M' or 'U'. Esempio: make BUILD_CONFIG=R)
 endif
 
 OS ?= linux

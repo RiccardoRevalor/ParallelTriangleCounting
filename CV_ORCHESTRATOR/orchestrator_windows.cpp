@@ -171,7 +171,7 @@ int main(int argc, char** argv) {
 
     //RUN SEQUENTIALLY EVERY PROGRAM WITH EVERY PARAM
 
-    /*
+    
     //Node V1
     for (const std::string& graph : graph_array_cap_10k) {
         if (executeWindowsProcess(PATH_SEQUENTIAL_NODE_IT + "/" + main_v1, graph + " " + gpu) != 0) {
@@ -213,7 +213,7 @@ int main(int argc, char** argv) {
 
     cout << "Phase " << ++numPhases << " completed: Sequential Edge V2 Iteration with all graphs." << endl << endl;
 
-    /*
+    
 
     //Parallel Node CPP V1
     for (const std::string& graph : graph_array_cap_10k) {
@@ -337,7 +337,7 @@ int main(int argc, char** argv) {
     }
     cout << "Phase " << ++numPhases << " completed: CUDA Edge V1_1 Iteration with graphs up to 10k nodes." << endl << endl;
 
-    */
+    
 
     //CUDA EDGE V1_2, JUST BLOCKSIZE
     for (const std::string& graph : graph_array) {
@@ -352,7 +352,7 @@ int main(int argc, char** argv) {
 
     cout << "Phase " << ++numPhases << " completed: CUDA Edge V1_2 Iteration with graphs up to 10k nodes." << endl << endl;
 
-    /*
+    
 
     //CUDA EDGE V2, JUST BLOCKSIZE
     for (const std::string& graph : graph_array) {
@@ -417,7 +417,7 @@ int main(int argc, char** argv) {
     }
     cout << "Phase " << ++numPhases << " completed: CUDA Matrix Multiplication V2 Iteration with graphs up to 10k nodes." << endl << endl;
 
-    */
+    
 
     return 0;
 }

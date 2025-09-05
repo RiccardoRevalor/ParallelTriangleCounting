@@ -1,36 +1,59 @@
-- in sintesi, col merge like avremmo complessità minore,, però la branch divergence e la non coalescence rendono meno efficiente il lavoro dei thread nello stesso warp, quindi ci mette di più
-<br>
+## About the Project
+![Introduction Picture](./img/intro_pic.jpg)
 
+This project evaluates the performance of different implementations of the Forward Algorithm for counting triangles in a graph. We provide both a sequential baseline and parallelized versions, where parallelization is achieved using CPU multithreading and GPU acceleration.
 
+## Getting started
 
+The following is a complete guide on how to set up and run the program correctly on a windows machine.
 
-**Compilation**
+### Prerequisites
+- Computer with a windows operating system
+- NVIDIA GPU that can support the CUDA toolkit.
+- At least 16GB of ram
+- make and g++.
+- cl.exe from Visual Studio Tools.
 
-**Windows**
+The setup phase of the CUDA toolkit, make and g++ is not covered in this guide. 
 
-- open the general makefile
-- set the right nvcc_win and VS_PATH
-- open visual studio console
+### set up variables in make file
 
-- CHOOSE between 1) and 2):
-1) set make temporary to the session -> set PATH=C:\tools\ucrt-make\bin;%PATH% <br>
-2) set make permanently in enviroment variables -> system variables -> Path -> copy this **C:\msys64\usr\bin** 
+- copy the path to nvcc.exe
+- open the Makefile in the project folder
+- paste the path between "" of the variable `nvcc_win`
 
-make --version
-nvcc --version
-cd path\to\ParallelCountTriangles
-make OS=windows 
+![var_2](./img/var_2.jpg)
 
-**linux**
-cd path/to/ParallelCountTriangles
-make OS=linux 
+- Copy the path to cl.exe.
+- open the Makefile in the project folder
+- paste the path between "" of the variable `VS_PATH_USER`
 
+![var_1](./img/var_1.jpg)
 
-**remove .lib .exp**
+### Compilation
 
-**windows**
-del /s /q *.lib *.exp
+#### Compile algorithms
+The Makefile in the project folder automatically compiles all the algorithms.
+Run the following command to compile the algorithms:
+```
+make OS=windows BUILD_CONFIG=U
+```
 
-**linux**
-find . -type f -name "*.lib" -delete
-find . -type f -name "*.exp" -delete
+![main_makefile](./img/main_makefile.jpg)
+
+#### Compile Orchestrator
+The Orchestrator is the program located in the folder `CV_ORCHESTRATOR` that tests the algorithms all in one single run and create csv files for each algorithm about the performance in the folder `cross_validation_output`. In the subdirectory CV_ORCHESTRATOR run the following program to compile orchestrator_windows.cpp
+```
+make OS=windows
+``` 
+
+![orchestrator_makefile](./img/orchestrator_makefile.jpg)
+
+### run orchestrator
+In the folder `CV_ORCHESTRATOR` run the orchestrator through the following command, replacing <GPU_MODEL> with the name of your GPU:
+```
+.\orchestrator_windows.exe <GPU_MODEL>
+```
+
+### results
+Each algorithm saves its performance in a specific folder (distinguished by its name) in the folder cross_validation_output through a csv file. The csv file name has the following format: `graphName_GPU_User.csv`.
