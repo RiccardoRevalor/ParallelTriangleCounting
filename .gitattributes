@@ -2,3 +2,4 @@
 graph_file/** linguist-vendored
 *.tex linguist-vendored
 paper/** linguist-vendored
+*.ipynb linguist-vendored
