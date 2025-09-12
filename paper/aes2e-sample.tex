@@ -15,6 +15,15 @@
 \DeclareMathAlphabet{\mathcal}{OMS}{cmsy}{m}{n}
 \SetMathAlphabet{\mathcal}{bold}{OMS}{cmsy}{b}{n}
 
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    filecolor=magenta,      
+    urlcolor=cyan, % Colore per i link URL
+    pdftitle={Overleaf Example},
+    pdfpagemode=FullScreen,
+}
+
 % Metadata Information
 %\jyear{2025}
 %\jmonth{August}
@@ -58,9 +67,9 @@ AND \author{Riccardo Revalor}
 \section{Mathematical definition of the problem}
 Suppose that we have at our disposal a given graph $G = (V, E)$, where $G$ is the graph itself, $V$ denotes the set of all vertices (also called nodes), and $E$ represents the set of edges (also called links or arcs). An edge connects two nodes between them. The primary goal is to detect and count the number of triangles that can be formed inside the graph. More specifically, a \textbf{triangle} in graph $G = (V, E)$ is a set of three distinct vertices $\{u, v, w\} \subseteq V$ such that the edges $(u,v)$, $(v,w)$, and $(w,u)$ all exist in the set of edges $E$. This problem can be solved essentially using two distinct main approaches:
 \subsection{Graph Traversal/Iterative Methods}
-This category encompasses algorithms like the \textbf{Node Iterator} or the \textbf{Edge Iterator} that directly explore the graph, and at each iteration they try to look for the specific pattern that defines a triangle (three mutually connected vertices, as said before). They operate by iterating through parts of the graph (by scanning the list of either its nodes or edges) and checking for connections.
+This category encompasses algorithms like the \textbf{Node Iterator}\cite{DEK1, DEK2} or the \textbf{Edge Iterator}\cite{DEK1, DEK2} that directly explore the graph, and at each iteration they try to look for the specific pattern that defines a triangle (three mutually connected vertices, as said before). They operate by iterating through parts of the graph (by scanning the list of either its nodes or edges) and checking for connections.
 \subsection{Linear Algebra/Matrix Methods}
-In this category, we mainly recall the \textbf{Matrix Multiplication} approach, which only works if the graph is represented by an adjacency matrix, which leverages matrix operations, specifically cubing (i.e. matrix multiplication) and trace computation, to get the exact number of triangles which can be created. Given the graph adjacency matrix $A$, this number is computed as $$\frac{1}{6} \text{ Trace}(A^3)$$ In graph terms, this trace represents the total count of all closed walks of length 3 in the graph, summed across all possible starting/ending vertices. 
+In this category, we mainly recall the \textbf{Matrix Multiplication} approach\cite{DEK2}, which only works if the graph is represented by an adjacency matrix, which leverages matrix operations, specifically cubing (i.e. matrix multiplication) and trace computation, to get the exact number of triangles which can be created. Given the graph adjacency matrix $A$, this number is computed as $$\frac{1}{6} \text{ Trace}(A^3)$$ In graph terms, this trace represents the total count of all closed walks of length 3 in the graph, summed across all possible starting/ending vertices. 
 
 \section{Node Iterator Algorithm, Forward Algorithm}
 The simplest and most naive version of the Node Iterator Algorithm iterates over all nodes in the graph and, for each pair of neighbors of each node, checks whether they are connected by an edge and they share a common neighbor. For each vertex, its \textbf{degree} $d(v)$ denotes its neighbors. If we have $V$ vertices, for each of them, we test unique pairs of neighbors that can be formed from $d(v)$ items. So, the overall complexity can be expressed as
@@ -70,15 +79,15 @@ The simplest and most naive version of the Node Iterator Algorithm iterates over
 &= \sum_{v \in V} \frac{d(v) \cdot (d(v)-1) \cdot (d(v)-2)!}{2 \cdot 1 \cdot (d(v)-2)!} \\
 &= \sum_{v \in V} \frac{d(v) \cdot (d(v)-1)}{2}
 \end{align*}
-In this project, we resorted to the so called \textbf{Forward Algorithm}, a variant which aims at improving complexity by iterating over vertices in a specific order, and efficiently queries their neighbors to identify potential triangle closures. We first implemented the \textbf{sequential} version of the algorithm, using \textbf{C++}, in which we can identify three main data structures used:
+In this project, we resorted to the so called \textbf{Forward Algorithm} \cite{DEK2}, a variant which aims at improving complexity by iterating over vertices in a specific order, and efficiently queries their neighbors to identify potential triangle closures. We first implemented the \textbf{sequential} version of the algorithm, using \textbf{C++}, in which we can identify three main data structures used:
 \begin{itemize}
     \item \textbf{Graph Representation:} How the graph's vertices and edges are stored, enabling efficient retrieval of a node's neighbors. We used and analyzed two primary representations: \textbf{adjacency matrices} (implemented as \texttt{std::vector<std::vector<int>>}) and \textbf{adjacency lists} (implemented as \texttt{std::map<int, std::vector<int>>} to handle potentially sparse or non-contiguous node IDs).
     \item \textbf{Auxiliary Sets (\textit{A[t]}):} Data structures used to store a specific subset of neighbors for each node (implemented as \texttt{std::vector<std::set<int>>}, where the outer vector is indexed by the node ID). These sets are then intersected (as defined in set theory) to identify the third vertex of a triangle.
     \item \textbf{Ordering/Ranks:} Structures (a sorted list of vertices and a map for ranks) to maintain and query the chosen ordering of vertices. Ranks are crucial for \textbf{pruning} and guarantee that each triangle is counted exactly once and that the search space is significantly reduced. Our implementation orders vertices by their degree (from highest to lowest) to optimize performance.
 \end{itemize}
-\subsection{Forward Algorithm V1}
+\subsection{Forward Node Algorithm V1}
 In the file \texttt{seq\_node\_it\_v1.cpp} there's the implementation using the adjacency matrix. An entry \texttt{adjacencyMatrix[i][j]} is 1 if there is an edge between vertex \texttt{i} and vertex \texttt{j}, and 0 otherwise. So, with N nodes, the space complexity to store the matrix is $\mathcal{O}\left(N^2\right)$. Neighbor retrieval is linear, as it's mandatory to scan the full row of the node inside the matrix. The auxiliary set is defined as \texttt{std::vector<std::set<int>> A}. When processing an edge \texttt{(s, t)}, the algorithm needs to find common elements between \texttt{A[s]} and \texttt{A[t]}. As \texttt{std::set} stores elements in sorted order, \texttt{std::set\_intersection} can be efficiently applied, resulting in a complexity of $\mathcal{O}\left(K_0 + K_1\right)$, being $K_0$ and $K_1$ the sets sizes. For the orderings we use \texttt{std::map<int, int> ranks} and \texttt{std::vector<int> orderedList}.Checking rank condition takes $\mathcal{O}\left(\log N\right)$ for map lookups, and we iterate through the whole \texttt{orderedList} so it takes $\mathcal{O}\left( N\right)$. \\
-\subsection{Forward Algorithm V2 (better version) and comparison}
+\subsection{Forward Node Algorithm V2 (better version) and comparison}
 In the file \texttt{seq\_node\_it\_v2.cpp} we used the adjacency list, coded as a \texttt{std::map<int, std::vector<int>>} to better handle potentially sparse or non-contiguous node IDs. This version is \textbf{more efficient}: to find the neighbors of a vertex u, the algorithm performs a lookup in the map ($\mathcal{O}\left(\log N\right)$) and then copies the associated vector of neighbors ($\mathcal{O}\left( d(u)\right)$). This is significantly more efficient for sparse graphs than iterating an entire row of an adjacency matrix. \\
 So, to resume the comparison between the two algorithms:
 \begin{table}[htbp]
@@ -152,8 +161,7 @@ We immediately see the scalability issues are solved: if we increase the thread 
 Finally, let's compare the best version of the C++ Paralell algorithm with the best version of the sequential algorithm, using a logarithmic scale to analyze the order of magnitude of the \textbf{speedup}:
 \includegraphics[width=0.52\textwidth, height=10cm, keepaspectratio]{charts/node_forward_iteration_10k_nodes_comparison.png}
 
-Here are the final charts, comparing the \textbf{performances} and the \textbf{overall speed-up and efficiency} of the Parallel v2 version versus the sequential version:
-\includegraphics[width=0.48\textwidth, height=10cm, keepaspectratio]{charts/node_it_parallel_comp.png}
+Here is the final chart, displaying the \textbf{overall speed-up and efficiency} of the Parallel v2 version versus the sequential version: \\
 \includegraphics[width=0.48\textwidth, height=10cm, keepaspectratio]{charts/speed_up_eff_parallel_vs_sequential.png}
 
 \subsection{CUDA Parallel Forward Node Algorithm V1}
@@ -398,7 +406,7 @@ The C++ code implements this parallel strategy to compute $A^3$ in two distinct 
     \newline The algorithm launches $p$ threads, each responsible for computing a specific range of rows of the resulting $A^2$ matrix. A synchronization barrier (via \texttt{join()}) ensures that all threads complete their work before moving to the next stage.
 
     \item \textbf{Stage 2: Computing $A^3 = A^2 \times A$}
-    \newline A new set of $p$ threads is launched. This time, they use the previously computed $A^2$ matrix and the original $A$ matrix as input. A final synchronization barrier ensures the completion of this second multiplication before the final $A^3$ matrix is returned.
+    \newline After all the threads waited on the \textbf{barrier}, they can go ahead and use the previously computed $A^2$ matrix and the original $A$ matrix as input. A final synchronization barrier ensures the completion of this second multiplication before the final $A^3$ matrix is returned.
 \end{enumerate}
 A key optimization for sparse matrices is included within the core multiplication function. By checking for zero elements (\texttt{if (A[i][k] != 0)}), the algorithm \textbf{avoids unnecessary computations}, leading to significant performance gains on average-case scenarios for sparse graphs.
 At the end, we linearly compute the \textbf{Trace} of the resulting matrix and multiply it by $\frac{1}{6}$.
@@ -428,36 +436,31 @@ For the \textbf{10k-node graph}, the performance improvements are even more pron
 
 
 
-\bibliography{aes2e.bib}
-\bibliographystyle{aes2e.bst}
+%\bibliography{aes2e.bib}
+%\bibliographystyle{aes2e.bst}
 
 % NOTE:
 % - in case you are not using bibTex you have to manually edit the bibliograpy as below.
 % - if submitting a bibTex file is not allowed you can copy the content from the aes2e.bbl file  
-%\begin{thebibliography}{99}
+\begin{thebibliography}{99}
 %
-%\newcommand{\enquote}[1]{``#1''}
-%\providecommand{\url}[1]{\texttt{#1}}
-%\providecommand{\urlprefix}{URL }
-%\expandafter\ifx\csname urlstyle\endcsname\relax
-%  \providecommand{\doi}[1]{[Online]. Available: \discretionary{}{}{}#1}\else
-%  \providecommand{\doi}{doi:\discretionary{}{}{}\begingroup
-%  \urlstyle{rm}\Url}\fi
-%
-%\bibitem{DEK1}
-%D.~Preis, \enquote{Phase Distortion and Phase Equalization in Audio Signal
-%  Processing---A Tutorial Review,} \emph{J. Audio Eng. Soc.}, vol.~30, no.~11,
-%  pp. 774--779 (1982 Nov.).
-%
-%\bibitem{DEK2}
-%J.~S. Abel, D.~P. Berners, \enquote{MUS424/EE367D: Signal Processing Techniques
-%  for Digital Audio Effects,}  (2005), unpublished Course Notes, CCRMA,
-%  Stanford University, Stanford, CA.
-%
-%\bibitem{DEK3}
-%C.~Roads, \enquote{Musical Sound Transformation by Convolution,} presented at
-%  the \emph{Int. Computer Music Conf.}, pp. 102--109 (1993).
-%
+\newcommand{\enquote}[1]{``#1''}
+\providecommand{\url}[1]{\texttt{#1}}
+\providecommand{\urlprefix}{URL }
+\expandafter\ifx\csname urlstyle\endcsname\relax
+  \providecommand{\doi}[1]{[Online]. Available: \discretionary{}{}{}#1}\else
+  \providecommand{\doi}{doi:\discretionary{}{}{}\begingroup
+  \urlstyle{rm}\Url}\fi
+
+\bibitem{DEK1}
+Schank, T., \& Wagner, D. (2005). Finding, Counting, and Listing all Triangles in Large
+Graphs, An Experimental Study
+\bibitem{DEK2}
+In WEA 2005: Experimental and Efficient Algorithms
+(pp. 606-609). Springer
+\bibitem{DEK3}
+Cohen, J. (2009). Graph Twiddling in a MapReduce World. Computing in Science \&
+Engineering, 11(4), 29-41
 %\bibitem{DEK4}
 %C.~Roads, \emph{The Computer Music Tutorial} (MIT Press, Cambridge, MA), 1st
 %  ed. (1996).
@@ -468,21 +471,13 @@ For the \textbf{10k-node graph}, the performance improvements are even more pron
 %  Soc}, vol.~65, no. 1/2, pp. 42--55 (2017 Jan.Feb.),
 %  \doi{https://doi.org/10.17743/jaes.2016.0063}.
 %  
-%\end{thebibliography}
+\end{thebibliography}
 
 
-\begin{comment}
-\begin{nomenclature}[PAMPs]
-\subsection*{NOMENCLATURE}
-\nomentry{a$_c$}{condensation coefficient condensation coefficient condensation coefficient}
-
-
-\nomentry{TLR}{Toll-like receptor}
-
-\nomentry{PAMPs}{pathogen-associated molecular patterns condensation coefficient condensation}
-\end{nomenclature}
-\end{comment}
 %Biography
- \biography{A1firstname A1lastname}{a.eps}{insert your text here}
- \biography{A2firstname A2lastname}{b.eps}{insert your text here}
+ \biography{Michele Carloni}{a.eps}{insert your text here  \\ \\ \\ \\ test}
+ \biography{Riccardo Revalor}{authors_photos/foto_linkedin1.jpeg}{Computer Engineering MSc student, Politecnico di Torino. Computer Science MSc student, University of Illinois at Chicago. \\ 
+ LinkedIn: \href{https://www.linkedin.com/in/riccardo-revalor/}{linkedin.com/in/riccardo-revalor/} \\
+ GitHub:  \href{https://github.com/RiccardoRevalor}{github.com/RiccardoRevalor}
+ }
 \end{document}
